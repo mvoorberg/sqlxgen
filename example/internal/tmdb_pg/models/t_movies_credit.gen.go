@@ -44,21 +44,54 @@ func (t *TMoviesCredit) InsertQuery() string {
 	return tMoviesCreditInsertSql
 }
 
-func (t *TMoviesCredit) UpdateQuery() string {
-	return tMoviesCreditUpdateSql
+func (t *TMoviesCredit) UpdateAllQuery() string {
+	return tMoviesCreditUpdateAllSql
 }
 
-func (t *TMoviesCredit) FindQuery() string {
-	return tMoviesCreditFindSql
+func (t *TMoviesCredit) UpdateByPkQuery() string {
+	return tMoviesCreditUpdateByPkSql
+}
+
+func (t *TMoviesCredit) CountQuery() string {
+	return tMoviesCreditModelCountSql
 }
 
 func (t *TMoviesCredit) FindAllQuery() string {
 	return tMoviesCreditFindAllSql
 }
 
-func (t *TMoviesCredit) DeleteQuery() string {
-	return tMoviesCreditDeleteSql
+func (t *TMoviesCredit) FindFirstQuery() string {
+	return tMoviesCreditFindFirstSql
 }
+
+func (t *TMoviesCredit) FindByPkQuery() string {
+	return tMoviesCreditFindByPkSql
+}
+
+func (t *TMoviesCredit) DeleteByPkQuery() string {
+	return tMoviesCreditDeleteByPkSql
+}
+
+func (t *TMoviesCredit) DeleteAllQuery() string {
+	return tMoviesCreditDeleteAllSql
+}
+
+// language=postgresql
+var tMoviesCreditAllFieldsWhere = `
+WHERE TRUE
+    AND (CAST(:casting AS JSONB) IS NULL or casting = :casting)
+    AND (CAST(:crew AS JSONB) IS NULL or crew = :crew)
+    AND (CAST(:movie_id AS INT8) IS NULL or movie_id = :movie_id)
+    AND (CAST(:title AS TEXT) IS NULL or title = :title)
+`
+
+// language=postgresql
+var tMoviesCreditPkFieldsWhere = `
+WHERE casting = :casting
+  AND crew = :crew
+  AND movie_id = :movie_id
+  AND title = :title
+`
 
 // language=postgresql
 var tMoviesCreditInsertSql = `
@@ -82,18 +115,14 @@ RETURNING
 `
 
 // language=postgresql
-var tMoviesCreditUpdateSql = `
+var tMoviesCreditUpdateByPkSql = `
 UPDATE public.t_movies_credits
 SET
   casting = :casting,
   crew = :crew,
   movie_id = :movie_id,
   title = :title
-WHERE TRUE
-  AND casting = :casting
-  AND crew = :crew
-  AND movie_id = :movie_id
-  AND title = :title
+` + tMoviesCreditPkFieldsWhere + `
 RETURNING
   casting,
   crew,
@@ -102,20 +131,26 @@ RETURNING
 `
 
 // language=postgresql
-var tMoviesCreditFindSql = `
-SELECT
+var tMoviesCreditUpdateAllSql = `
+UPDATE public.t_movies_credits
+SET
+  casting = :casting,
+  crew = :crew,
+  movie_id = :movie_id,
+  title = :title
+` + tMoviesCreditAllFieldsWhere + `
+RETURNING
   casting,
   crew,
   movie_id,
-  title
-FROM public.t_movies_credits
-WHERE TRUE
-  AND (CAST(:casting AS JSONB) IS NULL or casting = :casting)
-  AND (CAST(:crew AS JSONB) IS NULL or crew = :crew)
-  AND (CAST(:movie_id AS INT8) IS NULL or movie_id = :movie_id)
-  AND (CAST(:title AS TEXT) IS NULL or title = :title)
-LIMIT 1;
+  title;
 `
+
+// language=postgresql
+var tMoviesCreditModelCountSql = `
+SELECT count(*) as count
+FROM public.t_movies_credits
+` + tMoviesCreditAllFieldsWhere + ";"
 
 // language=postgresql
 var tMoviesCreditFindAllSql = `
@@ -125,18 +160,36 @@ SELECT
   movie_id,
   title
 FROM public.t_movies_credits
-WHERE TRUE
-  AND (CAST(:casting AS JSONB) IS NULL or casting = :casting)
-  AND (CAST(:crew AS JSONB) IS NULL or crew = :crew)
-  AND (CAST(:movie_id AS INT8) IS NULL or movie_id = :movie_id)
-  AND (CAST(:title AS TEXT) IS NULL or title = :title);
+` + tMoviesCreditAllFieldsWhere + ";"
+
+// language=postgresql
+var tMoviesCreditFindFirstSql = strings.TrimRight(tMoviesCreditFindAllSql, ";") + `
+LIMIT 1;`
+
+// language=postgresql
+var tMoviesCreditFindByPkSql = `
+SELECT
+  casting,
+  crew,
+  movie_id,
+  title
+FROM public.t_movies_credits
+` + tMoviesCreditPkFieldsWhere + `
+LIMIT 1;`
+
+// language=postgresql
+var tMoviesCreditDeleteByPkSql = `
+DELETE FROM public.t_movies_credits
+WHERE casting = :casting
+  AND crew = :crew
+  AND movie_id = :movie_id
+  AND title = :title;
 `
 
 // language=postgresql
-var tMoviesCreditDeleteSql = `
+var tMoviesCreditDeleteAllSql = `
 DELETE FROM public.t_movies_credits
-WHERE TRUE
-  AND casting = :casting
+WHERE casting = :casting
   AND crew = :crew
   AND movie_id = :movie_id
   AND title = :title;

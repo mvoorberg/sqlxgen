@@ -38,21 +38,50 @@ func (c *Company) InsertQuery() string {
 	return companyInsertSql
 }
 
-func (c *Company) UpdateQuery() string {
-	return companyUpdateSql
+func (c *Company) UpdateAllQuery() string {
+	return companyUpdateAllSql
 }
 
-func (c *Company) FindQuery() string {
-	return companyFindSql
+func (c *Company) UpdateByPkQuery() string {
+	return companyUpdateByPkSql
+}
+
+func (c *Company) CountQuery() string {
+	return companyModelCountSql
 }
 
 func (c *Company) FindAllQuery() string {
 	return companyFindAllSql
 }
 
-func (c *Company) DeleteQuery() string {
-	return companyDeleteSql
+func (c *Company) FindFirstQuery() string {
+	return companyFindFirstSql
 }
+
+func (c *Company) FindByPkQuery() string {
+	return companyFindByPkSql
+}
+
+func (c *Company) DeleteByPkQuery() string {
+	return companyDeleteByPkSql
+}
+
+func (c *Company) DeleteAllQuery() string {
+	return companyDeleteAllSql
+}
+
+// language=postgresql
+var companyAllFieldsWhere = `
+WHERE TRUE
+    AND (CAST(:id AS INT8) IS NULL or id = :id)
+    AND (CAST(:name AS TEXT) IS NULL or name = :name)
+    AND (CAST(:name_search AS TSVECTOR) IS NULL or name_search = :name_search)
+`
+
+// language=postgresql
+var companyPkFieldsWhere = `
+WHERE id = :id
+`
 
 // language=postgresql
 var companyInsertSql = `
@@ -71,13 +100,12 @@ RETURNING
 `
 
 // language=postgresql
-var companyUpdateSql = `
+var companyUpdateByPkSql = `
 UPDATE public.companies
 SET
   id = :id,
   name = :name
-WHERE TRUE
-  AND id = :id
+` + companyPkFieldsWhere + `
 RETURNING
   id,
   name,
@@ -85,18 +113,23 @@ RETURNING
 `
 
 // language=postgresql
-var companyFindSql = `
-SELECT
+var companyUpdateAllSql = `
+UPDATE public.companies
+SET
+  id = :id,
+  name = :name
+` + companyAllFieldsWhere + `
+RETURNING
   id,
   name,
-  name_search
-FROM public.companies
-WHERE TRUE
-  AND (CAST(:id AS INT8) IS NULL or id = :id)
-  AND (CAST(:name AS TEXT) IS NULL or name = :name)
-  AND (CAST(:name_search AS TSVECTOR) IS NULL or name_search = :name_search)
-LIMIT 1;
+  name_search;
 `
+
+// language=postgresql
+var companyModelCountSql = `
+SELECT count(*) as count
+FROM public.companies
+` + companyAllFieldsWhere + ";"
 
 // language=postgresql
 var companyFindAllSql = `
@@ -105,17 +138,32 @@ SELECT
   name,
   name_search
 FROM public.companies
-WHERE TRUE
-  AND (CAST(:id AS INT8) IS NULL or id = :id)
-  AND (CAST(:name AS TEXT) IS NULL or name = :name)
-  AND (CAST(:name_search AS TSVECTOR) IS NULL or name_search = :name_search);
+` + companyAllFieldsWhere + ";"
+
+// language=postgresql
+var companyFindFirstSql = strings.TrimRight(companyFindAllSql, ";") + `
+LIMIT 1;`
+
+// language=postgresql
+var companyFindByPkSql = `
+SELECT
+  id,
+  name,
+  name_search
+FROM public.companies
+` + companyPkFieldsWhere + `
+LIMIT 1;`
+
+// language=postgresql
+var companyDeleteByPkSql = `
+DELETE FROM public.companies
+WHERE id = :id;
 `
 
 // language=postgresql
-var companyDeleteSql = `
+var companyDeleteAllSql = `
 DELETE FROM public.companies
-WHERE TRUE
-  AND id = :id
+WHERE id = :id
   AND name = :name
   AND name_search = :name_search;
 `
