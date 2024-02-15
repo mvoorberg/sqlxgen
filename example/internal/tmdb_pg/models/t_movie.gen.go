@@ -367,30 +367,9 @@ LIMIT 1;`
 // language=postgresql
 var tMovieDeleteByPkSql = `
 DELETE FROM public.t_movies
-WHERE id = :id;
-`
+` + tMoviePkFieldsWhere + ";"
 
 // language=postgresql
 var tMovieDeleteAllSql = `
 DELETE FROM public.t_movies
-WHERE id = :id
-  AND budget = :budget
-  AND genre = :genre
-  AND homepage = :homepage
-  AND keywords = :keywords
-  AND original_language = :original_language
-  AND original_title = :original_title
-  AND overview = :overview
-  AND popularity = :popularity
-  AND production_companies = :production_companies
-  AND production_countries = :production_countries
-  AND release_date = :release_date
-  AND revenue = :revenue
-  AND runtime = :runtime
-  AND spoken_languages = :spoken_languages
-  AND status = :status
-  AND tagline = :tagline
-  AND title = :title
-  AND vote_average = :vote_average
-  AND vote_count = :vote_count;
-`
+` + tMovieAllFieldsWhere + ";"

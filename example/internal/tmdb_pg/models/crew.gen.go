@@ -155,13 +155,9 @@ LIMIT 1;`
 // language=postgresql
 var crewDeleteByPkSql = `
 DELETE FROM public.crew
-WHERE id = :id;
-`
+` + crewPkFieldsWhere + ";"
 
 // language=postgresql
 var crewDeleteAllSql = `
 DELETE FROM public.crew
-WHERE id = :id
-  AND name = :name
-  AND name_search = :name_search;
-`
+` + crewAllFieldsWhere + ";"

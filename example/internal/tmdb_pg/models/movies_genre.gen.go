@@ -151,13 +151,9 @@ LIMIT 1;`
 // language=postgresql
 var moviesGenreDeleteByPkSql = `
 DELETE FROM public.movies_genres
-WHERE movie_id = :movie_id
-  AND genre_id = :genre_id;
-`
+` + moviesGenrePkFieldsWhere + ";"
 
 // language=postgresql
 var moviesGenreDeleteAllSql = `
 DELETE FROM public.movies_genres
-WHERE movie_id = :movie_id
-  AND genre_id = :genre_id;
-`
+` + moviesGenreAllFieldsWhere + ";"

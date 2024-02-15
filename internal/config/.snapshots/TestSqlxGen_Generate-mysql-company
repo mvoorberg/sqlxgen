@@ -36,8 +36,8 @@ func (c *Company) InsertQuery() string {
 	return companyInsertSql
 }
 
-func (c *Company) UpdateQuery() string {
-	return companyUpdateSql
+func (c *Company) UpdateAllQuery() string {
+	return companyUpdateAllSql
 }
 
 func (c *Company) UpdateByPkQuery() string {
@@ -45,7 +45,7 @@ func (c *Company) UpdateByPkQuery() string {
 }
 
 func (c *Company) CountQuery() string {
-	return companyCountSql
+	return companyModelCountSql
 }
 
 func (c *Company) FindAllQuery() string {
@@ -64,14 +64,15 @@ func (c *Company) DeleteByPkQuery() string {
 	return companyDeleteByPkSql
 }
 
-func (c *Company) DeleteQuery() string {
-	return companyDeleteSql
+func (c *Company) DeleteAllQuery() string {
+	return companyDeleteAllSql
 }
 
 // language=mysql
 var companyAllFieldsWhere = `
-WHERE (CAST(:name AS TEXT) IS NULL or name = :name)
-  AND (CAST(:id AS BIGINT) IS NULL or id = :id)
+WHERE TRUE
+    AND (CAST(:name AS TEXT) IS NULL or name = :name)
+    AND (CAST(:id AS BIGINT) IS NULL or id = :id)
 `
 
 // language=mysql
@@ -107,7 +108,7 @@ RETURNING
 `
 
 // language=mysql
-var companyUpdateSql = `
+var companyUpdateAllSql = `
 UPDATE app.companies
 SET
   name = :name,
@@ -119,7 +120,7 @@ RETURNING
 `
 
 // language=mysql
-var companyCountSql = `
+var companyModelCountSql = `
 SELECT count(*) as count
 FROM app.companies
 ` + companyAllFieldsWhere + ";"
@@ -148,13 +149,10 @@ LIMIT 1;`
 // language=mysql
 var companyDeleteByPkSql = `
 DELETE FROM app.companies
-WHERE id = :id;
-`
+` + companyPkFieldsWhere + ";"
 
-// language=mysql
-var companyDeleteSql = `
+// language=postgresql
+var companyDeleteAllSql = `
 DELETE FROM app.companies
-WHERE name = :name
-  AND id = :id;
-`
+` + companyAllFieldsWhere + ";"
 

@@ -171,15 +171,9 @@ LIMIT 1;`
 // language=postgresql
 var hyperParameterDeleteByPkSql = `
 DELETE FROM public.hyper_parameters
-WHERE type = :type
-  AND value = :value;
-`
+` + hyperParameterPkFieldsWhere + ";"
 
 // language=postgresql
 var hyperParameterDeleteAllSql = `
 DELETE FROM public.hyper_parameters
-WHERE type = :type
-  AND value = :value
-  AND friendly_name = :friendly_name
-  AND friendly_name_search = :friendly_name_search;
-`
+` + hyperParameterAllFieldsWhere + ";"

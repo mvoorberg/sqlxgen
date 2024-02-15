@@ -188,17 +188,11 @@ LIMIT 1;`
 // language=postgresql
 var {{ .CamelName }}DeleteByPkSql = `
 DELETE FROM {{ .Table.SchemaName }}.{{ .Table.TableName }}
-{{- range $i, $f := $pkFields }}
-{{ if (isFirst $i) }}WHERE{{ else }}  AND{{ end }} {{ .Column.ColumnName }} = :{{ .Column.ColumnName }}
-{{- end }};
-`
+` + {{ .CamelName }}PkFieldsWhere + ";"
 
 // language=postgresql
 var {{ .CamelName }}DeleteAllSql = `
 DELETE FROM {{ .Table.SchemaName }}.{{ .Table.TableName }}
-{{- range $i, $f := $selectFields }}
-{{ if (isFirst $i) }}WHERE{{ else }}  AND{{ end }} {{ .Column.ColumnName }} = :{{ .Column.ColumnName }}
-{{- end }};
-`
+` + {{ .CamelName }}AllFieldsWhere + ";"
 
 {{- end }}

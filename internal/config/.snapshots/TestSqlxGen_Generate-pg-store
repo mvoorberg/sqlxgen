@@ -1,13 +1,13 @@
 package store
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -25,8 +25,8 @@ func GetTypeName[T any](instance T) string {
 }
 
 func InsertOne[T model[P], P any](db Database, instance T) (T, error) {
-	inserted, err := Insert[T](db, instance)
 
+	inserted, err := Insert[T](db, instance)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,8 @@ func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	inserts := make([]T, 0)
 
 	for _, instance := range instances {
-		rows, err := db.NamedQuery(instance.InsertQuery(), instance)
+		insertSql := instance.InsertQuery()
+		rows, err := db.NamedQuery(insertSql, instance)
 
 		if err != nil {
 			return nil, err
@@ -53,16 +54,11 @@ func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 		inserted := new(P)
 
 		err = rows.StructScan(inserted)
-
 		if err != nil {
 			return nil, err
 		}
 
-		err = rows.Close()
-
-		if err != nil {
-			return nil, err
-		}
+		rows.Close()
 
 		inserts = append(inserts, inserted)
 	}
@@ -70,8 +66,28 @@ func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	return inserts, nil
 }
 
-// TODO: implement bulk insert
-// func InsertBulk[T model[P], P any](db Database, instances ...T) (int64, error) {}
+func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
+
+	updateSql := instance.UpdateByPkQuery()
+	rows, err := db.NamedQuery(updateSql, instance)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	hasNext := rows.Next()
+	if !hasNext {
+		return nil, fmt.Errorf("unable to update %s", GetTypeName(instance))
+	}
+
+	updated := new(P)
+	err = rows.StructScan(updated)
+	if err != nil {
+		return nil, err
+	}
+
+	return updated, nil
+}
 
 func UpdateOne[T model[P], P any](db Database, instance T) (T, error) {
 
@@ -79,11 +95,11 @@ func UpdateOne[T model[P], P any](db Database, instance T) (T, error) {
 	if err != nil {
 		return nil, err
 	}
-	if *count != 1 {
-		return nil, fmt.Errorf("update-one %s would have matched %d rows", GetTypeName(instance), *count)
+	if count != 1 {
+		return nil, fmt.Errorf("update-one %s would have matched %d rows", GetTypeName(instance), count)
 	}
 
-	updates, err := Update[T](db, instance)
+	updates, err := UpdateMany[T](db, instance)
 
 	if err != nil {
 		return nil, err
@@ -91,11 +107,12 @@ func UpdateOne[T model[P], P any](db Database, instance T) (T, error) {
 	return updates[0], nil
 }
 
-func Update[T model[P], P any](db Database, instances ...T) ([]T, error) {
+func UpdateMany[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	updates := make([]T, 0)
 
 	for _, instance := range instances {
-		rows, err := db.NamedQuery(instance.UpdateQuery(), instance)
+		updateSql := instance.UpdateAllQuery()
+		rows, err := db.NamedQuery(updateSql, instance)
 
 		if err != nil {
 			return nil, err
@@ -110,16 +127,11 @@ func Update[T model[P], P any](db Database, instances ...T) ([]T, error) {
 		updated := new(P)
 
 		err = rows.StructScan(updated)
-
 		if err != nil {
 			return nil, err
 		}
 
-		err = rows.Close()
-
-		if err != nil {
-			return nil, err
-		}
+		rows.Close()
 
 		updates = append(updates, updated)
 	}
@@ -127,37 +139,186 @@ func Update[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	return updates, nil
 }
 
-func Count[T model[P], P any](db Database, instance T) (*int64, error) {
-	var count int64
+func CountPtr[T model[P], P any](db Database, instance T) (*int64, error) {
+	countSql := instance.CountQuery()
+	return count(db, countSql, instance)
+}
 
-	err := db.QueryRow(instance.CountQuery()).Scan(&count)
+func Count[T model[P], P any](db Database, instance T) (int, error) {
+	result, err := CountPtr[T](db, instance)
+	if err != nil {
+		return -1, err
+	}
+	return int(*result), nil
+}
+
+func CountSql(db Database, countSql string, args interface{}) (int, error) {
+	result, err := count(db, countSql, args)
+	if err != nil {
+		return -1, err
+	}
+	return int(*result), nil
+}
+
+func count(db Database, countSql string, instance interface{}) (*int64, error) {
+	type CountResult struct {
+		Count int64 `db:"count"`
+	}
+	countResult := new(CountResult)
+
+	rows, err := db.NamedQuery(countSql, instance)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	hasNext := rows.Next()
+	if !hasNext {
+		msg := fmt.Sprintf("count %s failed", GetTypeName(instance))
+
+		return nil, fmt.Errorf(msg)
+	}
+
+	err = rows.StructScan(countResult)
+	if err != nil {
+		return nil, err
+	}
+
+	return &countResult.Count, nil
+}
+
+type QueryOptions struct {
+	SelectList *[]string
+	Paginator  *Paginator
+	OrderBy    *string
+}
+
+type Paginator struct {
+	Page     int
+	PageSize int
+}
+
+func FindMany[T model[P], P any](db Database, instance T) ([]T, error) {
+	return FindPage[T](db, instance, nil)
+}
+
+func FindPage[T model[P], P any](db Database, instance T, queryOpts *QueryOptions) ([]T, error) {
+
+	findAllSql := instance.FindAllQuery()
+	if queryOpts != nil {
+		if queryOpts.SelectList != nil && len(*queryOpts.SelectList) > 0 {
+			selectList := *queryOpts.SelectList
+			fromSql := fmt.Sprintf("FROM %s", instance.TableName())
+			whereSql := strings.Split(findAllSql, fromSql)[1]
+			findAllSql = fmt.Sprintf("SELECT %s %s %s", strings.Join(selectList, ", "), fromSql, whereSql)
+		}
+
+		findAllSql = strings.TrimRight(findAllSql, "\r\n;")
+		if queryOpts.OrderBy != nil {
+			findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
+		} else {
+			findAllSql += " ORDER BY 1"
+		}
+
+		pager := *queryOpts.Paginator
+		if queryOpts.Paginator != nil && pager.PageSize > 0 && pager.Page > 1 {
+			findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
+		}
+	}
+	return findMany[T](db, instance, findAllSql, false)
+}
+
+func FindManySql[T model[P], P any](db Database, querySQL string, args interface{}) ([]T, error) {
+	return findMany[T](db, args, querySQL, false)
+}
+
+func findMany[T model[P], P any](db Database, instance interface{}, sqlQuery string, failOnMulti bool) ([]T, error) {
+	if instance == nil {
+		instance = struct{}{}
+	}
+	rows, err := db.NamedQuery(sqlQuery, instance)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &count, nil
+	defer rows.Close()
+
+	idx := 0
+	result := make([]T, 0)
+
+	for rows.Next() {
+		if failOnMulti && idx > 0 {
+			return nil, ErrFoundMultiple
+		}
+		rowInstance := new(P)
+
+		err = rows.StructScan(rowInstance)
+
+		if err != nil {
+			return nil, err
+		}
+
+		idx++
+		result = append(result, rowInstance)
+	}
+
+	return result, nil
 }
 
-func findSingle[T model[P], P any](db Database, instance T, sqlQuery string) (T, error) {
+// Find limit 1
+func FindFirst[T model[P], P any](db Database, instance T) (T, error) {
+	return findSingle[T](db, instance, instance.FindFirstQuery())
+}
+
+// Find and return 1, err if > 1
+func FindOne[T model[P], P any](db Database, instance T) (T, error) {
+	querySql := instance.FindAllQuery()
+
+	result, err := findMany[T](db, instance, querySql, true)
+	if err != nil {
+		return nil, err
+	}
+	return result[0], nil
+}
+
+func FindByPk[T model[P], P any](db Database, instance T) (T, error) {
+	return findSingle[T](db, instance, instance.FindByPkQuery())
+}
+
+func FindOneSql[T model[P], P any](db Database, querySQL string, args interface{}) (T, error) {
+	result, err := findMany[T](db, args, querySQL, true)
+	if err != nil {
+		return nil, err
+	}
+	return result[0], nil
+}
+
+func FindFirstSql[T model[P], P any](db Database, querySQL string, args interface{}) (T, error) {
+	return findSingle[T](db, args, querySQL)
+}
+
+func findSingle[T model[P], P any](db Database, instance interface{}, sqlQuery string) (T, error) {
+	if instance == nil {
+		instance = struct{}{}
+	}
+
 	result := new(P)
 
 	rows, err := db.NamedQuery(sqlQuery, instance)
-
 	if err != nil {
 		return result, err
 	}
 
-	defer func(rows *sqlx.Rows) {
-		_ = rows.Close()
-	}(rows)
+	defer rows.Close()
 
 	hasNext := rows.Next()
 
 	if !hasNext {
-		msg := fmt.Sprintf("'%s' not found", GetTypeName(instance))
+		msg := fmt.Sprintf("%s not found", GetTypeName(instance))
 
-		return result, fmt.Errorf(msg, ErrNotFound)
+		return result, fmt.Errorf(msg)
 	}
 
 	err = rows.StructScan(result)
@@ -167,67 +328,6 @@ func findSingle[T model[P], P any](db Database, instance T, sqlQuery string) (T,
 	}
 
 	return result, nil
-}
-
-func findMany[T model[P], P any](db Database, instance T, sqlQuery string) ([]T, error) {
-	rows, err := db.NamedQuery(sqlQuery, instance)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer func(rows *sqlx.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	result := make([]T, 0)
-
-	for rows.Next() {
-		instance := new(P)
-
-		err = rows.StructScan(instance)
-
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, instance)
-	}
-
-	return result, nil
-}
-
-func Find[T model[P], P any](db Database, instance T) (T, error) {
-	// ** Deprecated:
-	//    Use FindFirst or FindOne depending on your expectation if > 1 rows match criteria.
-	return FindFirst(db, instance)
-}
-
-// Find limit 1
-func FindFirst[T model[P], P any](db Database, instance T) (T, error) {
-	return findSingle(db, instance, instance.FindFirstQuery())
-}
-
-// Find and return 1, err if > 1
-func FindOne[T model[P], P any](db Database, instance T) (T, error) {
-	limitedQuery := strings.TrimRight(instance.FindAllQuery(), ";") + " LIMIT 2;"
-
-	result, err := findMany(db, instance, limitedQuery)
-	if err != nil {
-		return nil, err
-	}
-	if len(result) > 1 {
-		return nil, ErrFoundMultiple
-	}
-	return result[0], nil
-}
-
-func FindByPk[T model[P], P any](db Database, instance T) (T, error) {
-	return findSingle(db, instance, instance.FindByPkQuery())
-}
-
-func FindMany[T model[P], P any](db Database, instance T) ([]T, error) {
-	return findMany(db, instance, instance.FindAllQuery())
 }
 
 // Delete by Pk, err if not found
@@ -254,18 +354,18 @@ func DeleteOne[T model[P], P any](db Database, instance T) error {
 	if err != nil {
 		return err
 	}
-	if *count != 1 {
-		return fmt.Errorf("delete-one %s would have matched %d rows", GetTypeName(instance), *count)
+	if count != 1 {
+		return fmt.Errorf("delete-one %s would have matched %d rows", GetTypeName(instance), count)
 	}
 
-	_, err = Delete[T](db, instance)
+	_, err = DeleteAll[T](db, instance)
 
 	return err
 }
 
-func Delete[T model[P], P any](db Database, instance T) (*int64, error) {
+func DeleteAll[T model[P], P any](db Database, instance T) (*int64, error) {
 
-	result, err := db.NamedExec(instance.DeleteQuery(), instance)
+	result, err := db.NamedExec(instance.DeleteAllQuery(), instance)
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
@@ -282,7 +382,7 @@ type model[P any] interface {
 	PrimaryKey() []string
 
 	InsertQuery() string
-	UpdateQuery() string
+	UpdateAllQuery() string
 	UpdateByPkQuery() string
 
 	CountQuery() string
@@ -291,64 +391,7 @@ type model[P any] interface {
 	FindAllQuery() string
 
 	DeleteByPkQuery() string
-	DeleteQuery() string
-}
-
-// Custom sql query used like:
-//
-//	func (args *CatalogQryArgs) Query(db store.Database) ([]*CatalogQryResult, error) {
-//		return store.Query[*CatalogQryResult](db, args)
-//	}
-func Query[R result[pR], Q queryable[pQ], pR, pQ any](db Database, args Q) ([]R, error) {
-	re, err := regexp.Compile(`-{2,}\s*([\w\W\s\S]*?)(\n|\z)`)
-
-	if err != nil {
-		return nil, err
-	}
-
-	query := re.ReplaceAllString(args.Sql(), "$2")
-
-	rows, err := db.NamedQuery(query, args)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer func(rows *sqlx.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	result := make([]R, 0)
-
-	for rows.Next() {
-		instance := new(pR)
-
-		err = rows.StructScan(instance)
-
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, instance)
-	}
-
-	err = rows.Close()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
-}
-
-type queryable[P any] interface {
-	*P
-
-	Sql() string
-}
-
-type result[P any] interface {
-	*P
+	DeleteAllQuery() string
 }
 
 // supplementary types
@@ -357,8 +400,6 @@ type Database interface {
 	NamedExec(query string, arg interface{}) (sql.Result, error)
 
 	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
-
-	QueryRow(query string, args ...interface{}) *sql.Row
 }
 
 type JsonObject map[string]interface{}
@@ -405,7 +446,90 @@ func (j *JsonArray) Value() (driver.Value, error) {
 	return json.Marshal(j)
 }
 
+func countFields(v any) int {
+	return rvCountFields(reflect.ValueOf(v))
+}
+
+func rvCountFields(rv reflect.Value) (count int) {
+
+	if rv.Kind() != reflect.Struct {
+		return
+	}
+
+	fs := rv.NumField()
+	count += fs
+
+	for i := 0; i < fs; i++ {
+		f := rv.Field(i)
+		if rv.Type().Field(i).Anonymous {
+			count-- // don't count embedded structs (listed as anonymous fields) as a field
+		}
+
+		// recurse each field to see if that field is also an embedded struct
+		count += rvCountFields(f)
+	}
+
+	return
+}
+
+func BulkInsert[T model[P], P any](db *sqlx.DB, ctx context.Context, itemsToSave ...T) ([]*P, error) {
+	tx, err := db.BeginTxx(ctx, &sql.TxOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	pgMaxParameterCount := 500 // TODO: offer as an option
+
+	// we need to batch the inserts so num `items` * `item` struct field
+	// count is less than postgres MaxParameterCount - this is conservative
+	firstItem := itemsToSave[0]
+	itemPropertyCount := countFields(*firstItem)
+
+	maxBatch := pgMaxParameterCount / itemPropertyCount
+	items := make([]*P, 0, len(itemsToSave))
+	for i := 0; i < len(itemsToSave); i += maxBatch {
+		end := i + maxBatch
+
+		if end > len(itemsToSave) {
+			end = len(itemsToSave)
+		}
+
+		// Using an anonymous function to ensure that the rows are closed as we go!
+		err := func() error {
+			firstItemSql := firstItem.InsertQuery()
+			rows, err := sqlx.NamedQueryContext(ctx, tx, firstItemSql, itemsToSave[i:end])
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+			defer rows.Close()
+
+			insertedRowIdx := 0
+			batchItems := make([]*P, len(itemsToSave[i:end]))
+			for rows.Next() {
+				newItem := new(P)
+				if err := rows.StructScan(newItem); err != nil {
+					tx.Rollback()
+					return err
+				}
+				batchItems[insertedRowIdx] = newItem
+				insertedRowIdx++
+			}
+			items = append(items, batchItems...)
+			return nil
+		}()
+		if err != nil {
+			return nil, err
+		}
+	}
+	tx.Commit()
+
+	return items, nil
+}
+
+// *************************
 // errors
+// *************************
 
 var ErrNotFound = errors.New("entity not found")
 var ErrFoundMultiple = errors.New("multiple matching entities")

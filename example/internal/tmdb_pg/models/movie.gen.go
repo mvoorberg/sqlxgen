@@ -441,37 +441,9 @@ LIMIT 1;`
 // language=postgresql
 var movieDeleteByPkSql = `
 DELETE FROM public.movies
-WHERE id = :id;
-`
+` + moviePkFieldsWhere + ";"
 
 // language=postgresql
 var movieDeleteAllSql = `
 DELETE FROM public.movies
-WHERE id = :id
-  AND budget = :budget
-  AND client_id = :client_id
-  AND completed_coordinates = :completed_coordinates
-  AND data_synced_at = :data_synced_at
-  AND distance_to_place = :distance_to_place
-  AND homepage = :homepage
-  AND is_completed = :is_completed
-  AND keywords = :keywords
-  AND keywords_search = :keywords_search
-  AND location_accuracy = :location_accuracy
-  AND original_language = :original_language
-  AND original_title = :original_title
-  AND overview = :overview
-  AND popularity = :popularity
-  AND release_date = :release_date
-  AND revenue = :revenue
-  AND runtime = :runtime
-  AND search_vector = :search_vector
-  AND status = :status
-  AND summary = :summary
-  AND synopsis = :synopsis
-  AND tagline = :tagline
-  AND title = :title
-  AND title_search = :title_search
-  AND vote_average = :vote_average
-  AND vote_count = :vote_count;
-`
+` + movieAllFieldsWhere + ";"

@@ -183,16 +183,9 @@ LIMIT 1;`
 // language=postgresql
 var moviesActorDeleteByPkSql = `
 DELETE FROM public.movies_actors
-WHERE movie_id = :movie_id
-  AND actor_id = :actor_id;
-`
+` + moviesActorPkFieldsWhere + ";"
 
 // language=postgresql
 var moviesActorDeleteAllSql = `
 DELETE FROM public.movies_actors
-WHERE movie_id = :movie_id
-  AND actor_id = :actor_id
-  AND cast_order = :cast_order
-  AND character = :character
-  AND character_search = :character_search;
-`
+` + moviesActorAllFieldsWhere + ";"

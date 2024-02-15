@@ -41,8 +41,8 @@ func (m *MoviesCrew) InsertQuery() string {
 	return moviesCrewInsertSql
 }
 
-func (m *MoviesCrew) UpdateQuery() string {
-	return moviesCrewUpdateSql
+func (m *MoviesCrew) UpdateAllQuery() string {
+	return moviesCrewUpdateAllSql
 }
 
 func (m *MoviesCrew) UpdateByPkQuery() string {
@@ -50,7 +50,7 @@ func (m *MoviesCrew) UpdateByPkQuery() string {
 }
 
 func (m *MoviesCrew) CountQuery() string {
-	return moviesCrewCountSql
+	return moviesCrewModelCountSql
 }
 
 func (m *MoviesCrew) FindAllQuery() string {
@@ -69,16 +69,17 @@ func (m *MoviesCrew) DeleteByPkQuery() string {
 	return moviesCrewDeleteByPkSql
 }
 
-func (m *MoviesCrew) DeleteQuery() string {
-	return moviesCrewDeleteSql
+func (m *MoviesCrew) DeleteAllQuery() string {
+	return moviesCrewDeleteAllSql
 }
 
 // language=mysql
 var moviesCrewAllFieldsWhere = `
-WHERE (CAST(:department_id AS TEXT) IS NULL or department_id = :department_id)
-  AND (CAST(:job_id AS TEXT) IS NULL or job_id = :job_id)
-  AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
-  AND (CAST(:crew_id AS BIGINT) IS NULL or crew_id = :crew_id)
+WHERE TRUE
+    AND (CAST(:department_id AS TEXT) IS NULL or department_id = :department_id)
+    AND (CAST(:job_id AS TEXT) IS NULL or job_id = :job_id)
+    AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
+    AND (CAST(:crew_id AS BIGINT) IS NULL or crew_id = :crew_id)
 `
 
 // language=mysql
@@ -125,7 +126,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesCrewUpdateSql = `
+var moviesCrewUpdateAllSql = `
 UPDATE app.movies_crew
 SET
   department_id = :department_id,
@@ -141,7 +142,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesCrewCountSql = `
+var moviesCrewModelCountSql = `
 SELECT count(*) as count
 FROM app.movies_crew
 ` + moviesCrewAllFieldsWhere + ";"
@@ -174,15 +175,9 @@ LIMIT 1;`
 // language=mysql
 var moviesCrewDeleteByPkSql = `
 DELETE FROM app.movies_crew
-WHERE movie_id = :movie_id
-  AND crew_id = :crew_id;
-`
+` + moviesCrewPkFieldsWhere + ";"
 
-// language=mysql
-var moviesCrewDeleteSql = `
+// language=postgresql
+var moviesCrewDeleteAllSql = `
 DELETE FROM app.movies_crew
-WHERE department_id = :department_id
-  AND job_id = :job_id
-  AND movie_id = :movie_id
-  AND crew_id = :crew_id;
-`
+` + moviesCrewAllFieldsWhere + ";"

@@ -3,8 +3,8 @@ package fixtures
 import (
 	_ "embed"
 	"fmt"
-	"github.com/mvoorberg/sqlxgen/gen/pg/store"
 	"github.com/lib/pq"
+	"github.com/mvoorberg/sqlxgen/gen/pg/store"
 	"strings"
 	"time"
 )

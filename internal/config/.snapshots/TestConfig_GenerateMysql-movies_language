@@ -37,8 +37,8 @@ func (m *MoviesLanguage) InsertQuery() string {
 	return moviesLanguageInsertSql
 }
 
-func (m *MoviesLanguage) UpdateQuery() string {
-	return moviesLanguageUpdateSql
+func (m *MoviesLanguage) UpdateAllQuery() string {
+	return moviesLanguageUpdateAllSql
 }
 
 func (m *MoviesLanguage) UpdateByPkQuery() string {
@@ -46,7 +46,7 @@ func (m *MoviesLanguage) UpdateByPkQuery() string {
 }
 
 func (m *MoviesLanguage) CountQuery() string {
-	return moviesLanguageCountSql
+	return moviesLanguageModelCountSql
 }
 
 func (m *MoviesLanguage) FindAllQuery() string {
@@ -65,14 +65,15 @@ func (m *MoviesLanguage) DeleteByPkQuery() string {
 	return moviesLanguageDeleteByPkSql
 }
 
-func (m *MoviesLanguage) DeleteQuery() string {
-	return moviesLanguageDeleteSql
+func (m *MoviesLanguage) DeleteAllQuery() string {
+	return moviesLanguageDeleteAllSql
 }
 
 // language=mysql
 var moviesLanguageAllFieldsWhere = `
-WHERE (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
-  AND (CAST(:language_id AS TEXT) IS NULL or language_id = :language_id)
+WHERE TRUE
+    AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
+    AND (CAST(:language_id AS TEXT) IS NULL or language_id = :language_id)
 `
 
 // language=mysql
@@ -109,7 +110,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesLanguageUpdateSql = `
+var moviesLanguageUpdateAllSql = `
 UPDATE app.movies_languages
 SET
   movie_id = :movie_id,
@@ -121,7 +122,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesLanguageCountSql = `
+var moviesLanguageModelCountSql = `
 SELECT count(*) as count
 FROM app.movies_languages
 ` + moviesLanguageAllFieldsWhere + ";"
@@ -150,14 +151,10 @@ LIMIT 1;`
 // language=mysql
 var moviesLanguageDeleteByPkSql = `
 DELETE FROM app.movies_languages
-WHERE movie_id = :movie_id
-  AND language_id = :language_id;
-`
+` + moviesLanguagePkFieldsWhere + ";"
 
-// language=mysql
-var moviesLanguageDeleteSql = `
+// language=postgresql
+var moviesLanguageDeleteAllSql = `
 DELETE FROM app.movies_languages
-WHERE movie_id = :movie_id
-  AND language_id = :language_id;
-`
+` + moviesLanguageAllFieldsWhere + ";"
 

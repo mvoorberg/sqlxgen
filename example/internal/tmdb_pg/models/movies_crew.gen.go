@@ -175,15 +175,9 @@ LIMIT 1;`
 // language=postgresql
 var moviesCrewDeleteByPkSql = `
 DELETE FROM public.movies_crew
-WHERE movie_id = :movie_id
-  AND crew_id = :crew_id;
-`
+` + moviesCrewPkFieldsWhere + ";"
 
 // language=postgresql
 var moviesCrewDeleteAllSql = `
 DELETE FROM public.movies_crew
-WHERE movie_id = :movie_id
-  AND crew_id = :crew_id
-  AND department_id = :department_id
-  AND job_id = :job_id;
-`
+` + moviesCrewAllFieldsWhere + ";"

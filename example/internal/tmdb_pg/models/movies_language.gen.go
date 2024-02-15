@@ -151,13 +151,9 @@ LIMIT 1;`
 // language=postgresql
 var moviesLanguageDeleteByPkSql = `
 DELETE FROM public.movies_languages
-WHERE movie_id = :movie_id
-  AND language_id = :language_id;
-`
+` + moviesLanguagePkFieldsWhere + ";"
 
 // language=postgresql
 var moviesLanguageDeleteAllSql = `
 DELETE FROM public.movies_languages
-WHERE movie_id = :movie_id
-  AND language_id = :language_id;
-`
+` + moviesLanguageAllFieldsWhere + ";"

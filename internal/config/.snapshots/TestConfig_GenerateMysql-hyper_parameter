@@ -39,8 +39,8 @@ func (h *HyperParameter) InsertQuery() string {
 	return hyperParameterInsertSql
 }
 
-func (h *HyperParameter) UpdateQuery() string {
-	return hyperParameterUpdateSql
+func (h *HyperParameter) UpdateAllQuery() string {
+	return hyperParameterUpdateAllSql
 }
 
 func (h *HyperParameter) UpdateByPkQuery() string {
@@ -48,7 +48,7 @@ func (h *HyperParameter) UpdateByPkQuery() string {
 }
 
 func (h *HyperParameter) CountQuery() string {
-	return hyperParameterCountSql
+	return hyperParameterModelCountSql
 }
 
 func (h *HyperParameter) FindAllQuery() string {
@@ -67,15 +67,16 @@ func (h *HyperParameter) DeleteByPkQuery() string {
 	return hyperParameterDeleteByPkSql
 }
 
-func (h *HyperParameter) DeleteQuery() string {
-	return hyperParameterDeleteSql
+func (h *HyperParameter) DeleteAllQuery() string {
+	return hyperParameterDeleteAllSql
 }
 
 // language=mysql
 var hyperParameterAllFieldsWhere = `
-WHERE (CAST(:friendly_name AS TEXT) IS NULL or friendly_name = :friendly_name)
-  AND (CAST(:type AS TEXT) IS NULL or type = :type)
-  AND (CAST(:value AS TEXT) IS NULL or value = :value)
+WHERE TRUE
+    AND (CAST(:friendly_name AS TEXT) IS NULL or friendly_name = :friendly_name)
+    AND (CAST(:type AS TEXT) IS NULL or type = :type)
+    AND (CAST(:value AS TEXT) IS NULL or value = :value)
 `
 
 // language=mysql
@@ -117,7 +118,7 @@ RETURNING
 `
 
 // language=mysql
-var hyperParameterUpdateSql = `
+var hyperParameterUpdateAllSql = `
 UPDATE app.hyper_parameters
 SET
   friendly_name = :friendly_name,
@@ -131,7 +132,7 @@ RETURNING
 `
 
 // language=mysql
-var hyperParameterCountSql = `
+var hyperParameterModelCountSql = `
 SELECT count(*) as count
 FROM app.hyper_parameters
 ` + hyperParameterAllFieldsWhere + ";"
@@ -162,15 +163,10 @@ LIMIT 1;`
 // language=mysql
 var hyperParameterDeleteByPkSql = `
 DELETE FROM app.hyper_parameters
-WHERE type = :type
-  AND value = :value;
-`
+` + hyperParameterPkFieldsWhere + ";"
 
-// language=mysql
-var hyperParameterDeleteSql = `
+// language=postgresql
+var hyperParameterDeleteAllSql = `
 DELETE FROM app.hyper_parameters
-WHERE friendly_name = :friendly_name
-  AND type = :type
-  AND value = :value;
-`
+` + hyperParameterAllFieldsWhere + ";"
 

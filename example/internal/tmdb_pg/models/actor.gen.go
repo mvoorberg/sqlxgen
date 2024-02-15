@@ -155,13 +155,9 @@ LIMIT 1;`
 // language=postgresql
 var actorDeleteByPkSql = `
 DELETE FROM public.actors
-WHERE id = :id;
-`
+` + actorPkFieldsWhere + ";"
 
 // language=postgresql
 var actorDeleteAllSql = `
 DELETE FROM public.actors
-WHERE id = :id
-  AND name = :name
-  AND name_search = :name_search;
-`
+` + actorAllFieldsWhere + ";"

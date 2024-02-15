@@ -180,17 +180,9 @@ LIMIT 1;`
 // language=postgresql
 var tMoviesCreditDeleteByPkSql = `
 DELETE FROM public.t_movies_credits
-WHERE casting = :casting
-  AND crew = :crew
-  AND movie_id = :movie_id
-  AND title = :title;
-`
+` + tMoviesCreditPkFieldsWhere + ";"
 
 // language=postgresql
 var tMoviesCreditDeleteAllSql = `
 DELETE FROM public.t_movies_credits
-WHERE casting = :casting
-  AND crew = :crew
-  AND movie_id = :movie_id
-  AND title = :title;
-`
+` + tMoviesCreditAllFieldsWhere + ";"

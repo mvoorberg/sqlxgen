@@ -157,13 +157,9 @@ LIMIT 1;`
 // language=postgresql
 var companyDeleteByPkSql = `
 DELETE FROM public.companies
-WHERE id = :id;
-`
+` + companyPkFieldsWhere + ";"
 
 // language=postgresql
 var companyDeleteAllSql = `
 DELETE FROM public.companies
-WHERE id = :id
-  AND name = :name
-  AND name_search = :name_search;
-`
+` + companyAllFieldsWhere + ";"

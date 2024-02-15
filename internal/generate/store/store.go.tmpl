@@ -222,7 +222,7 @@ func FindPage[T model[P], P any](db Database, instance T, queryOpts *QueryOption
 		}
 
 		pager := *queryOpts.Paginator
-		if queryOpts.Paginator != nil && pager.PageSize > 0 && pager.Page > 1 {
+		if queryOpts.Paginator != nil && pager.PageSize > 0 && pager.Page > 0 {
 			findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
 		}
 	}
