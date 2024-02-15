@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/aakash-rajur/sqlxgen/internal/logger"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/fs"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/logger"
+	"github.com/mvoorberg/sqlxgen/internal/utils/fs"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 	"gopkg.in/yaml.v3"
 )
 

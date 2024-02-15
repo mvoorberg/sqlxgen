@@ -6,10 +6,10 @@ import (
 	"fmt"
 	"slices"
 
-	i "github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
 	"github.com/jmoiron/sqlx"
 	"github.com/joomcode/errorx"
+	i "github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 )
 
 func (s source) IntrospectSchema(tx *sqlx.Tx) ([]i.Table, error) {

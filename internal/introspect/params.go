@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"slices"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 )
 
 func ParseParams(query string) ([]Column, error) {

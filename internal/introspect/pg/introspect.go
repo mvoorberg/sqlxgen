@@ -1,8 +1,8 @@
 package pg
 
 import (
-	i "github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/fs"
+	i "github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils/fs"
 )
 
 type source struct {

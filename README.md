@@ -1,29 +1,29 @@
 # sqlxgen
 
-[![Test](https://github.com/aakash-rajur/sqlxgen/actions/workflows/test.yml/badge.svg)](https://github.com/aakash-rajur/sqlxgen/actions/workflows/test.yml) 
-[![Release](https://github.com/aakash-rajur/sqlxgen/actions/workflows/release.yml/badge.svg)](https://github.com/aakash-rajur/sqlxgen/actions/workflows/release.yml) 
-[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/aakash-rajur/sqlxgen/main/LICENSE.md)
+[![Test](https://github.com/mvoorberg/sqlxgen/actions/workflows/test.yml/badge.svg)](https://github.com/mvoorberg/sqlxgen/actions/workflows/test.yml) 
+[![Release](https://github.com/mvoorberg/sqlxgen/actions/workflows/release.yml/badge.svg)](https://github.com/mvoorberg/sqlxgen/actions/workflows/release.yml) 
+[![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://raw.githubusercontent.com/mvoorberg/sqlxgen/main/LICENSE.md)
 
-`sqlxgen` is a cli tool to generate sqlx compatible code from database schema and sql queries in your project.
+`sqlxgen` is a command line tool to generate easy-to-use models and 
+a generic sqlx based repository to interact with your existing database schema. Get more done with less code and when you need to write custom code, the generated stuff gets out of your way to let you get the job done!
 
-1. Run [postgres query](https://github.com/aakash-rajur/sqlxgen/blob/main/internal/introspect/pg/model.sql) 
-   or [mysql query](https://github.com/aakash-rajur/sqlxgen/blob/main/internal/introspect/mysql/model.sql) 
-   to generate model code.
-2. Run your query without selecting any rows to generate model code for the output and input structs.
-3. support for postgres and mysql databases.
+1. Initialize your project with the `sqlxgen init` command to create a `sqlxgen.yml` file that can be configured to load some or all of the tables in your database, and write models to folders specific to your project.
+1. Running `sqlxgen generate --config=sqlxgen.yml` will inspect the objects within your your [postgres](https://github.com/mvoorberg/sqlxgen/blob/main/internal/introspect/pg/model.sql) or [mysql](https://github.com/mvoorberg/sqlxgen/blob/main/internal/introspect/mysql/model.sql) database to generate accurate model code.
+1. Each time you make changes to the structure of your database, re-run the above `generate` command to create updated models.
+1. Get down to the business of writing your application with less custom code and fewer bugs!
 
 ## Installation
 ### homebrew
 ```bash
-brew install aakash-rajur/tap/sqlxgen
+brew install mvoorberg/tap/sqlxgen
 ```
 
 ### Releases
-checkout releases [here](https://github.com/aakash-rajur/sqlxgen/releases)
+checkout releases [here](https://github.com/mvoorberg/sqlxgen/releases)
 
 ### Install from source
 ```bash
-go install -v github.com/aakash-rajur/sqlxgen/cmd/sqlxgen@latest
+go install -v github.com/mvoorberg/sqlxgen/cmd/sqlxgen@latest
 ```
 
 ## Usage
@@ -32,27 +32,28 @@ go install -v github.com/aakash-rajur/sqlxgen/cmd/sqlxgen@latest
 ```bash
 sqlxgen init
 ```
-2. edit `sqlxgen.yml` file to suit your needs. [example](example/sqlxgen.yml#L12-L14)
+2. Edit `sqlxgen.yml` file to suit your needs. [example](example/sqlxgen.yml#L12-L14)
    1. `host` takes precedence over `url`.
    2. with `host` other parameters can be omitted.
    3. just provide `url` if you want to use it as is.
    4. default connection for postgres is `postgres://postgres:@localhost:5432/postgres?sslmode=disable`
    5. default connection for mysql is `root:@tcp(localhost:3306)/mysql?parseTime=true`
+
 ```yaml
 # expand env vars, host takes precedence over url
 # url: postgres://u:p@h:5432/db?sslmode=disable
 # host: h1
 # result: postgres://postgres:@h1:5432/db?sslmode=disable
 ```
-3. generate table model and query model code with the following command. Picks `sqlxgen.yml` from current directory.
+3. Generate table and query model code with the following command. By default it will use `sqlxgen.yml` and `.env` files from the current directory.
 ```bash
 sqlxgen generate [--config <path-to-config-file>]
 ```
 
 ## Example
-example can be found [here](example)
+A fully generated [example](example) is included with the source of this project.
 
-following movies table generates [movies.gen.go](example/internal/tmdb_pg/models/movie.gen.go)
+The following movies table generates [movies.gen.go](example/internal/tmdb_pg/models/movie.gen.go)
 ```mermaid
 erDiagram
   movies {
@@ -76,7 +77,7 @@ erDiagram
    bigint id
 }
 ```
-following query generates [get_actor.gen.go](example/internal/tmdb_pg/api/get_actor.gen.go)
+The following query, saved in a file named `get_actor.sql` generates the model file "[get_actor.gen.go](example/internal/tmdb_pg/api/get_actor.gen.go)". Note that the query parameter is decorated with `-- :id type: bigint` to tell the code generation how to handle the query parameter.
 ```sql
 select
 a."id" as "id",
@@ -104,49 +105,25 @@ where a.id = :id; -- :id type: bigint
 ```
 
 ## Issues
-1. `::` type casting is broken in sqlx
-2. parameters are required to be annotated with typings `-- :param_name type: <param type>` as such,
-```sql
-select 
-u.* 
-from users u 
-where true 
-and id = :user_id; -- :user_id type: bigint
-```
-3. otherwise, they'll have `interface{}` type and will not be type safe.
-4. json (`json` or `jsonb`) column selects required to annotated with `-- column: <column_name> json_type: <array | object>` as such,
-```sql
-select
-u.id,
-u.metadata -- column: metadata json_type: object
-from users u
-where true
-and id = :user_id; -- :user_id type: bigint
-```
-5. otherwise, they'll have `json.RawMessage` type.
-6. `json[b]_agg`, `json[b]_build_object`, `json_arrayagg`, `json_objectagg`, `json_object` and etc are taken care of [ref](internal/introspect/pg/json.go#L34)
+1. ...not yet implemented
 
 ## Motivation
-1. age-old sql generation vs sql debate, i prefer writing sql queries over sql generation. (eat your greens!)
-2. [sqlx](https://github.com/jmoiron/sqlx) expects provides excellent support for writing named queries and mapping query results to structs. Writing struct for each one of my tables and queries is tedious and error prone.
-3. [sqlc](https://github.com/sqlc-dev/sqlc) generates models for table and queries but has the following challenges:
-   1. dumps all generated code in a single place, not allowing me to organize my code more contextually. 
-   2. does not introspect my queries through database unless I type cast my selects explicitly.
-   3. introduces sqlc [syntax](https://docs.sqlc.dev/en/latest/howto/named_parameters.html#nullable-parameters) for 
-      writing queries, which is not sql. Fine in most cases but if i want to run that query in my database client, 
-      i have to rewrite it.
-   4. does not generate crud operations for my tables.
+1. Many of the projects I work on already have a database, so a database-first approach makes so much sense.
+2. I don't want to hand-write model objects to match tables that already exist. It's tedious and error prone. Let the computer do that work.
+3. Simple CRUD functions don't need to be written by hand, it's the same functions repeated throughout any codebase. Using a generic API that knows how to execute CRUD functions with generated models can greatly reduce the amount of code you need to write.
+4. [Sqlx named queries](https://github.com/jmoiron/sqlx) do an amazing job mapping query results to generated models and from models to query parameters.
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+Find a bug or have suggestions that could improve the generated code? Let me know or submit a PR.
 
 ## License
 [MIT](LICENSE.md)
 
 ## Feedback
-Please feel free to [open an issue](https://github.com/aakash-rajur/sqlxgen/issues/new) if you have any feedback or suggestions.
+Please feel free to [open an issue](https://github.com/mvoorberg/sqlxgen/issues/new) if you have any feedback or suggestions.
 
 ## Acknowledgements
-1. [TMDB](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata)
-2. [sqlc](https://github.com/sqlc-dev/sqlc)
+This project was initially developed by [Aakash Rajur](https://github.com/aakash-rajur). He's done some amazing work on it and I learned a lot by going through it. We have different ideas about what the generated API should be so I'm publishing from my fork.
+1. [Aakash Rajur](https://github.com/aakash-rajur/sqlxgen)
+2. [TMDB](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata)
 3. [sqlx](https://github.com/jmoiron/sqlx)

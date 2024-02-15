@@ -3,7 +3,7 @@ package api
 import (
 	_ "embed"
 	"fmt"
-	"github.com/aakash-rajur/example/internal/tmdb_mysql/store"
+	"github.com/mvoorberg/example/internal/tmdb_mysql/store"
 	"strings"
 )
 

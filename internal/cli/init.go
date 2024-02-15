@@ -3,8 +3,8 @@ package cli
 import (
 	"os"
 
-	i "github.com/aakash-rajur/sqlxgen/internal/init"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
+	i "github.com/mvoorberg/sqlxgen/internal/init"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 	"github.com/spf13/cobra"
 )
 

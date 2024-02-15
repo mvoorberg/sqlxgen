@@ -1,8 +1,8 @@
 package config
 
 import (
-	"github.com/aakash-rajur/sqlxgen/internal/config/types"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/config/types"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 )
 
 func defaultMysqlConfig() *Config {

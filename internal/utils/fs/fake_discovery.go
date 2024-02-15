@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils/array"
+	"github.com/mvoorberg/sqlxgen/internal/utils/array"
 )
 
 type FakeDiscover struct {

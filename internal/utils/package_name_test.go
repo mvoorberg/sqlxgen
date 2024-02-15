@@ -29,7 +29,7 @@ go 1.16
 		{
 			testName: "valid go.mod file2",
 			content: `
-module github.com/aakash-rajur/sqlxgen
+module github.com/mvoorberg/sqlxgen
 
 go 1.21.1
 
@@ -49,7 +49,7 @@ require github.com/stretchr/testify v1.8.2 // indirect
 
 `,
 			error:       nil,
-			packageName: "github.com/aakash-rajur/sqlxgen",
+			packageName: "github.com/mvoorberg/sqlxgen",
 		},
 		{
 			testName: "invalid go.mod file",

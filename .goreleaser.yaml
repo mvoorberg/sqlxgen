@@ -53,11 +53,11 @@ release: {}
 
 brews:
   - name: sqlxgen
-    homepage: https://github.com/aakash-rajur/sqlxgen
+    homepage: https://github.com/mvoorberg/sqlxgen
     description: tool to generate sqlx models from schemas and queries
     license: MIT
     repository:
-      owner: aakash-rajur
+      owner: mvoorberg
       name: homebrew-tap
       branch: main
     test: |

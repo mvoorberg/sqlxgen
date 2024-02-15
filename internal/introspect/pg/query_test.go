@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/array"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/fs"
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/jmoiron/sqlx"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/array"
+	"github.com/mvoorberg/sqlxgen/internal/utils/fs"
 	"github.com/stretchr/testify/assert"
 )
 

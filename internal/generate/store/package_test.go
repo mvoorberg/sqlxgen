@@ -5,8 +5,8 @@ import (
 	"path"
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/bradleyjkemp/cupaloy"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,7 +19,7 @@ func TestPackage_Generate(t *testing.T) {
 
 	storePackage, err := NewPackage(
 		mw.Creator,
-		"github.com/aakash-rajur/sqlxgen/gen/tmdb_pg/store",
+		"github.com/mvoorberg/sqlxgen/gen/tmdb_pg/store",
 		genDir,
 	)
 
@@ -49,7 +49,7 @@ func TestNewPackage(t *testing.T) {
 
 	got, err := NewPackage(
 		mw.Creator,
-		"github.com/aakash-rajur/sqlxgen/gen/tmdb_pg/store",
+		"github.com/mvoorberg/sqlxgen/gen/tmdb_pg/store",
 		genDir,
 	)
 
@@ -58,7 +58,7 @@ func TestNewPackage(t *testing.T) {
 	want := Package{
 		WriterCreator: mw.Creator,
 		PackageName:   "store",
-		PackageDir:    "github.com/aakash-rajur/sqlxgen/gen/tmdb_pg/store",
+		PackageDir:    "github.com/mvoorberg/sqlxgen/gen/tmdb_pg/store",
 		GenDir:        genDir,
 	}
 

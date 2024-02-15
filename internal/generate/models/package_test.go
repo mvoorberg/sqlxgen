@@ -4,11 +4,11 @@ import (
 	"path"
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/generate/types"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/bradleyjkemp/cupaloy"
+	"github.com/mvoorberg/sqlxgen/internal/generate/types"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 	"github.com/stretchr/testify/assert"
 )
 

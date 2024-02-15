@@ -1,8 +1,8 @@
 package types
 
 import (
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/casing"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils/casing"
 )
 
 type Field struct {

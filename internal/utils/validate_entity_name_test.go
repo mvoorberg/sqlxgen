@@ -4,8 +4,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils/array"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/utils/array"
 	"github.com/stretchr/testify/assert"
 )
 

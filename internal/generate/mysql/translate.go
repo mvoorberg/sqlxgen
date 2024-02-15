@@ -3,8 +3,8 @@ package mysql
 import (
 	_ "embed"
 
-	"github.com/aakash-rajur/sqlxgen/internal/generate/types"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/generate/types"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
 )
 
 type Mysql struct{}
