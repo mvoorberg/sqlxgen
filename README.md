@@ -127,3 +127,4 @@ This project was initially developed by [Aakash Rajur](https://github.com/aakash
 1. [Aakash Rajur](https://github.com/aakash-rajur/sqlxgen)
 2. [TMDB](https://www.kaggle.com/datasets/tmdb/tmdb-movie-metadata)
 3. [sqlx](https://github.com/jmoiron/sqlx)
+
