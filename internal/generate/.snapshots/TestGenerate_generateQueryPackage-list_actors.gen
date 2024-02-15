@@ -3,10 +3,10 @@ package api
 var content = `{
   "packageName": "api", 
   "imports": [
- "github.com/aakash-rajur/sqlxgen-example/internal/store"
+ "github.com/mvoorberg/sqlxgen-example/internal/store"
 ],
 	"query": {
- "store_package_dir": "github.com/aakash-rajur/sqlxgen-example/internal/store",
+ "store_package_dir": "github.com/mvoorberg/sqlxgen-example/internal/store",
  "store_package_name": "store",
  "filename": "list-actors.sql",
  "pascal_name": "ListActors",

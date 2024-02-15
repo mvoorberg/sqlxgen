@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/jmoiron/sqlx"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 

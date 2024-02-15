@@ -3,7 +3,7 @@ package api
 import (
 	_ "embed"
 	"fmt"
-	"github.com/aakash-rajur/example/internal/tmdb_pg/store"
+	"github.com/mvoorberg/example/internal/tmdb_pg/store"
 	"strings"
 )
 

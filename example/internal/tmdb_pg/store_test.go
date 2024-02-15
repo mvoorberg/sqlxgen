@@ -3,9 +3,9 @@ package tmdb_pg
 import (
 	"testing"
 
-	models "github.com/aakash-rajur/example/internal/tmdb_pg/models"
-	store "github.com/aakash-rajur/example/internal/tmdb_pg/store"
 	"github.com/jmoiron/sqlx"
+	models "github.com/mvoorberg/example/internal/tmdb_pg/models"
+	store "github.com/mvoorberg/example/internal/tmdb_pg/store"
 	"gotest.tools/assert"
 
 	// "models"

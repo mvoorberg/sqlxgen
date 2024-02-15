@@ -9,14 +9,14 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/array"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/casing"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/fs"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/bradleyjkemp/cupaloy"
 	"github.com/jinzhu/inflection"
 	"github.com/jmoiron/sqlx"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/array"
+	"github.com/mvoorberg/sqlxgen/internal/utils/casing"
+	"github.com/mvoorberg/sqlxgen/internal/utils/fs"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/yaml.v3"
 )
@@ -932,7 +932,7 @@ type queryMeta struct {
 	filename string
 }
 
-var fakeGoMod string = `module github.com/aakash-rajur/sqlxgen
+var fakeGoMod string = `module github.com/mvoorberg/sqlxgen
 
 go 1.21.1
 

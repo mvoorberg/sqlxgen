@@ -3,13 +3,13 @@ package cli
 import (
 	"os"
 
-	"github.com/aakash-rajur/sqlxgen/internal/config"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/fs"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/mvoorberg/sqlxgen/internal/config"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/fs"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 	"github.com/spf13/cobra"
 )
 

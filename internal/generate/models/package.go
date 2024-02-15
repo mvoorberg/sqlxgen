@@ -4,11 +4,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/aakash-rajur/sqlxgen/internal/generate/types"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/casing"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/generate/types"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils/casing"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 )
 
 type Package struct {

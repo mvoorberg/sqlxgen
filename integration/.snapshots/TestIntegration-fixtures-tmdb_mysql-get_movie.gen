@@ -3,7 +3,7 @@ package tmdb_mysql
 import (
 	_ "embed"
 	"fmt"
-	"github.com/aakash-rajur/example/fixtures/tmdb_mysql/store"
+	"github.com/mvoorberg/example/fixtures/tmdb_mysql/store"
 	"strings"
 )
 

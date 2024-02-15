@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/aakash-rajur/sqlxgen/internal/generate/types"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/generate/types"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
 )
 
 func infer(storePackageDir string, column introspect.Column) (types.GoType, error) {

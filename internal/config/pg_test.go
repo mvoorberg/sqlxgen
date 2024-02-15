@@ -3,8 +3,8 @@ package config
 import (
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/config/types"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/config/types"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 	"github.com/stretchr/testify/assert"
 
 	_ "github.com/lib/pq"

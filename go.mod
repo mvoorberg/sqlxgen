@@ -1,4 +1,4 @@
-module github.com/aakash-rajur/sqlxgen
+module github.com/mvoorberg/sqlxgen
 
 go 1.21.1
 

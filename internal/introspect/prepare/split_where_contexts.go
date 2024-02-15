@@ -3,8 +3,8 @@ package prepare
 import (
 	"regexp"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils/linked_list"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/utils/linked_list"
 )
 
 func splitWhereContexts(query string) ([]string, error) {

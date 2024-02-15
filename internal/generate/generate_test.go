@@ -6,11 +6,11 @@ import (
 	"path"
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/generate/types"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/bradleyjkemp/cupaloy"
+	"github.com/mvoorberg/sqlxgen/internal/generate/types"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +25,7 @@ func TestGenerate_generateStorePackage(t *testing.T) {
 		t.Fatalf("unable to create generate object: %v", err)
 	}
 
-	_, err = gen.generateStorePackage("github.com/aakash-rajur/sqlxgen-example")
+	_, err = gen.generateStorePackage("github.com/mvoorberg/sqlxgen-example")
 
 	assert.Nil(t, err)
 
@@ -69,7 +69,7 @@ var content = `+"`"+`{
 		t.Fatalf("unable to create generate object: %v", err)
 	}
 
-	storePkg, err := gen.generateStorePackage("github.com/aakash-rajur/sqlxgen-example")
+	storePkg, err := gen.generateStorePackage("github.com/mvoorberg/sqlxgen-example")
 
 	assert.Nil(t, err)
 
@@ -134,7 +134,7 @@ var content = `+"`"+`{
 		t.Fatalf("unable to create generate object: %v", err)
 	}
 
-	storePkg, err := gen.generateStorePackage("github.com/aakash-rajur/sqlxgen-example")
+	storePkg, err := gen.generateStorePackage("github.com/mvoorberg/sqlxgen-example")
 
 	assert.Nil(t, err)
 
@@ -230,7 +230,7 @@ func createGen(
 	translate types.Translate,
 	workDir string,
 ) (Generate, error) {
-	goMod := `module github.com/aakash-rajur/sqlxgen-example
+	goMod := `module github.com/mvoorberg/sqlxgen-example
 
 go 1.21.1
 

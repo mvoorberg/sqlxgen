@@ -4,14 +4,14 @@ import (
 	"log/slog"
 	"path"
 
-	"github.com/aakash-rajur/sqlxgen/internal/generate/models"
-	"github.com/aakash-rajur/sqlxgen/internal/generate/queries"
-	"github.com/aakash-rajur/sqlxgen/internal/generate/store"
-	"github.com/aakash-rajur/sqlxgen/internal/generate/types"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/generate/models"
+	"github.com/mvoorberg/sqlxgen/internal/generate/queries"
+	"github.com/mvoorberg/sqlxgen/internal/generate/store"
+	"github.com/mvoorberg/sqlxgen/internal/generate/types"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 )
 
 type Generate struct {

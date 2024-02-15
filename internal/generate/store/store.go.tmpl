@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
 
 	"github.com/jmoiron/sqlx"
@@ -176,9 +175,9 @@ func count(db Database, countSql string, instance interface{}) (*int64, error) {
 
 	hasNext := rows.Next()
 	if !hasNext {
-		msg := fmt.Sprintf("count '%s' failed", GetTypeName(instance))
+		msg := fmt.Sprintf("count %s failed", GetTypeName(instance))
 
-		return nil, fmt.Errorf(msg, ErrNotFound)
+		return nil, fmt.Errorf(msg)
 	}
 
 	err = rows.StructScan(countResult)
@@ -214,20 +213,17 @@ func FindPage[T model[P], P any](db Database, instance T, queryOpts *QueryOption
 			whereSql := strings.Split(findAllSql, fromSql)[1]
 			findAllSql = fmt.Sprintf("SELECT %s %s %s", strings.Join(selectList, ", "), fromSql, whereSql)
 		}
-		if queryOpts.Paginator != nil {
-			pager := *queryOpts.Paginator
-			findAllSql = strings.TrimRight(findAllSql, "\r\n;")
-			if queryOpts.OrderBy != nil {
-				findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
-			}
-			if pager.PageSize != 0 {
-				findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
-			}
-			findAllSql += ";"
+
+		findAllSql = strings.TrimRight(findAllSql, "\r\n;")
+		if queryOpts.OrderBy != nil {
+			findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
 		} else {
-			if queryOpts.OrderBy != nil {
-				findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
-			}
+			findAllSql += " ORDER BY 1"
+		}
+
+		pager := *queryOpts.Paginator
+		if queryOpts.Paginator != nil && pager.PageSize > 0 && pager.Page > 1 {
+			findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
 		}
 	}
 	return findMany[T](db, instance, findAllSql, false)
@@ -269,12 +265,6 @@ func findMany[T model[P], P any](db Database, instance interface{}, sqlQuery str
 	}
 
 	return result, nil
-}
-
-func Find[T model[P], P any](db Database, instance T) (T, error) {
-  // ** Deprecated: 
-  //    Use FindFirst or FindOne depending on your expectation if > 1 rows match criteria.
-  return FindFirst(db, instance)
 }
 
 // Find limit 1
@@ -326,9 +316,9 @@ func findSingle[T model[P], P any](db Database, instance interface{}, sqlQuery s
 	hasNext := rows.Next()
 
 	if !hasNext {
-		msg := fmt.Sprintf("'%s' not found", GetTypeName(instance))
+		msg := fmt.Sprintf("%s not found", GetTypeName(instance))
 
-		return result, fmt.Errorf(msg, ErrNotFound)
+		return result, fmt.Errorf(msg)
 	}
 
 	err = rows.StructScan(result)
@@ -402,55 +392,6 @@ type model[P any] interface {
 
 	DeleteByPkQuery() string
 	DeleteAllQuery() string
-}
-
-// Custom sql query used like:
-//
-//	func (args *CatalogQryArgs) Query(db store.Database) ([]*CatalogQryResult, error) {
-//		return store.Query[*CatalogQryResult](db, args)
-//	}
-func Query[R result[pR], Q queryable[pQ], pR, pQ any](db Database, args Q) ([]R, error) {
-	re, err := regexp.Compile(`-{2,}\s*([\w\W\s\S]*?)(\n|\z)`)
-
-	if err != nil {
-		return nil, err
-	}
-
-	query := re.ReplaceAllString(args.Sql(), "$2")
-
-	rows, err := db.NamedQuery(query, args)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	result := make([]R, 0)
-
-	for rows.Next() {
-		instance := new(pR)
-
-		err = rows.StructScan(instance)
-
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, instance)
-	}
-
-	return result, nil
-}
-
-type queryable[P any] interface {
-	*P
-
-	Sql() string
-}
-
-type result[P any] interface {
-	*P
 }
 
 // supplementary types

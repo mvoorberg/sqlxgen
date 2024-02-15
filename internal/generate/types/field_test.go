@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -3,7 +3,7 @@ package linked_list
 import (
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 	"github.com/stretchr/testify/assert"
 )
 

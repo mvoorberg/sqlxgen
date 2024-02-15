@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/aakash-rajur/sqlxgen/internal/cli"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/cli"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
 )
 
 func main() {
@@ -17,4 +17,4 @@ func main() {
 	utils.ExitWithError(err)
 }
 
-var Version = "dev-modified"
+var Version = "https://github.com/mvoorberg/sqlxgen"

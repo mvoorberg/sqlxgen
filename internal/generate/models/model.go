@@ -11,15 +11,15 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/aakash-rajur/sqlxgen/internal/generate/types"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/array"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/casing"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	mapset "github.com/deckarep/golang-set"
 	"github.com/jinzhu/inflection"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/generate/types"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/array"
+	"github.com/mvoorberg/sqlxgen/internal/utils/casing"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 )
 
 type model struct {

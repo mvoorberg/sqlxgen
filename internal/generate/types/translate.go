@@ -3,7 +3,7 @@ package types
 import (
 	"strings"
 
-	"github.com/aakash-rajur/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/introspect"
 )
 
 type Translate interface {

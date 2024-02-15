@@ -4,10 +4,10 @@ var content = `{
   "packageName": "api", 
   "imports": [
  "time",
- "github.com/aakash-rajur/sqlxgen-example/internal/store"
+ "github.com/mvoorberg/sqlxgen-example/internal/store"
 ],
 	"query": {
- "store_package_dir": "github.com/aakash-rajur/sqlxgen-example/internal/store",
+ "store_package_dir": "github.com/mvoorberg/sqlxgen-example/internal/store",
  "store_package_name": "store",
  "filename": "get-movie.sql",
  "pascal_name": "GetMovie",

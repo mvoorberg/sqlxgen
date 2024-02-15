@@ -10,10 +10,10 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/casing"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/casing"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 )
 
 type Package struct {

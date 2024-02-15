@@ -3,8 +3,8 @@ package casing
 import (
 	"regexp"
 
-	"github.com/aakash-rajur/sqlxgen/internal/utils/array"
 	"github.com/joomcode/errorx"
+	"github.com/mvoorberg/sqlxgen/internal/utils/array"
 )
 
 func PascalCase(identifier string) (string, error) {

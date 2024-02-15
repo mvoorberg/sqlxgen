@@ -8,12 +8,12 @@ import (
 	"strings"
 	"text/template"
 
-	i "github.com/aakash-rajur/sqlxgen/internal/introspect"
-	"github.com/aakash-rajur/sqlxgen/internal/introspect/prepare"
-	"github.com/aakash-rajur/sqlxgen/internal/utils"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/casing"
 	"github.com/jmoiron/sqlx"
 	"github.com/joomcode/errorx"
+	i "github.com/mvoorberg/sqlxgen/internal/introspect"
+	"github.com/mvoorberg/sqlxgen/internal/introspect/prepare"
+	"github.com/mvoorberg/sqlxgen/internal/utils"
+	"github.com/mvoorberg/sqlxgen/internal/utils/casing"
 )
 
 func (s source) IntrospectQueries(tx *sqlx.Tx) ([]i.Query, error) {

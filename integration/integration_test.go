@@ -7,13 +7,13 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/aakash-rajur/sqlxgen/internal/config"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/fs"
-	"github.com/aakash-rajur/sqlxgen/internal/utils/writer"
 	"github.com/bradleyjkemp/cupaloy"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/mvoorberg/sqlxgen/internal/config"
+	"github.com/mvoorberg/sqlxgen/internal/utils/fs"
+	"github.com/mvoorberg/sqlxgen/internal/utils/writer"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -150,7 +150,7 @@ func TestIntegration(t *testing.T) {
 func withGoMod(workDir string) (func() error, error) {
 	modFile := path.Join(workDir, "go.mod")
 
-	content := `module github.com/aakash-rajur/example
+	content := `module github.com/mvoorberg/example
 
 go 1.21.1
 `
