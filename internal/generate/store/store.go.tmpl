@@ -526,6 +526,114 @@ func BulkInsert[T model[P], P any](db *sqlx.DB, ctx context.Context, itemsToSave
 
 	return items, nil
 }
+// *************************
+// starting partial Update!
+// *************************
+
+var SET_NULL = struct {
+	STRING      string
+	INT         int
+	INT16       int16
+	INT32       int32
+	INT64       int64
+	FLOAT32     float32
+	FLOAT64     float64
+	BOOL        bool
+	TIME        time.Time
+	BYTE        byte
+	JSON_RAW    string // json.RawMessage
+	JSON_ARRAY  string // lib.JsonArray
+	JSON_OBJECT string // lib.JsonObject
+}{
+	STRING:      "",
+	INT:         0,
+	INT16:       0,
+	INT32:       0,
+	INT64:       0,
+	FLOAT32:     0.0,
+	FLOAT64:     0.0,
+	BOOL:        false,
+	TIME:        time.Time{},
+	BYTE:        0,
+	JSON_RAW:    "", // json.RawMessage{},
+	JSON_ARRAY:  "", // lib.JsonArray{},
+	JSON_OBJECT: "", // lib.JsonObject{},
+}
+
+var NULL_STRING string = "NULL"
+
+// var nullPtr *string = &NULL_STRING
+
+type UpdateObjectMetadata struct {
+	DbName        string
+	FieldValue    any
+	FieldType     string
+	ShouldSetNull bool
+	ShouldUpdate  bool
+}
+
+func rUpdateFields(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
+
+	if rv.Kind() != reflect.Struct {
+		return
+	}
+
+	fields = make(map[string]UpdateObjectMetadata)
+
+	for i := 0; i < rv.NumField(); i++ {
+		fieldName := rv.Type().Field(i).Name
+
+		f := reflect.Indirect(rv).FieldByName(fieldName)
+
+		if f.Kind() != reflect.Struct {
+			fieldType := rv.Type().Field(i).Type.String()
+			fieldTag := rv.Type().Field(i).Tag
+
+			var shouldUpdate bool = false
+			var shouldSetNull bool = false
+
+			if !f.IsNil() {
+				fieldVal := f.Interface()
+				if fieldVal == &SET_NULL.STRING || fieldVal == &SET_NULL.INT || fieldVal == &SET_NULL.INT32 || fieldVal == &SET_NULL.INT64 || fieldVal == &SET_NULL.FLOAT32 || fieldVal == &SET_NULL.FLOAT64 || fieldVal == &SET_NULL.BOOL || fieldVal == &SET_NULL.TIME || fieldVal == &SET_NULL.BYTE || fieldVal == &SET_NULL.JSON_RAW {
+					shouldSetNull = true
+				}
+				shouldUpdate = true
+			}
+
+			fields[fieldName] = UpdateObjectMetadata{
+				DbName:        fieldTag.Get("db"),
+				FieldType:     fieldType,
+				ShouldSetNull: shouldSetNull,
+				ShouldUpdate:  shouldUpdate,
+			}
+		}
+	}
+
+	for i := 0; i < rv.NumField(); i++ {
+		f := rv.Field(i)
+
+		// recurse each field to see if that field is also an embedded struct
+		newfields := rUpdateFields(f)
+
+		// merge the new fields into the fields map
+		for k, v := range newfields {
+			fields[k] = v
+		}
+	}
+
+	return fields
+}
+
+func getFieldsForUpdate(v any) int {
+	// declare a map to hold the fields that have values
+	// fields := make(map[string]UpdateObjectMetadata)
+
+	fields := rUpdateFields(reflect.ValueOf(v))
+
+	// print the map
+	fmt.Printf("Done!: %v", fields)
+	return 0
+}
 
 // *************************
 // errors
