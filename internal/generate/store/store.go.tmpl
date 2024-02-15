@@ -213,20 +213,17 @@ func FindPage[T model[P], P any](db Database, instance T, queryOpts *QueryOption
 			whereSql := strings.Split(findAllSql, fromSql)[1]
 			findAllSql = fmt.Sprintf("SELECT %s %s %s", strings.Join(selectList, ", "), fromSql, whereSql)
 		}
-		if queryOpts.Paginator != nil {
-			pager := *queryOpts.Paginator
-			findAllSql = strings.TrimRight(findAllSql, "\r\n;")
-			if queryOpts.OrderBy != nil {
-				findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
-			}
-			if pager.PageSize != 0 {
-				findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
-			}
-			findAllSql += ";"
+
+		findAllSql = strings.TrimRight(findAllSql, "\r\n;")
+		if queryOpts.OrderBy != nil {
+			findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
 		} else {
-			if queryOpts.OrderBy != nil {
-				findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
-			}
+			findAllSql += " ORDER BY 1"
+		}
+
+		pager := *queryOpts.Paginator
+		if queryOpts.Paginator != nil && pager.PageSize > 0 && pager.Page > 1 {
+			findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
 		}
 	}
 	return findMany[T](db, instance, findAllSql, false)
