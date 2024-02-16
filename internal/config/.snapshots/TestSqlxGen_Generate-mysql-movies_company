@@ -37,8 +37,8 @@ func (m *MoviesCompany) InsertQuery() string {
 	return moviesCompanyInsertSql
 }
 
-func (m *MoviesCompany) UpdateQuery() string {
-	return moviesCompanyUpdateSql
+func (m *MoviesCompany) UpdateAllQuery() string {
+	return moviesCompanyUpdateAllSql
 }
 
 func (m *MoviesCompany) UpdateByPkQuery() string {
@@ -46,7 +46,7 @@ func (m *MoviesCompany) UpdateByPkQuery() string {
 }
 
 func (m *MoviesCompany) CountQuery() string {
-	return moviesCompanyCountSql
+	return moviesCompanyModelCountSql
 }
 
 func (m *MoviesCompany) FindAllQuery() string {
@@ -65,14 +65,15 @@ func (m *MoviesCompany) DeleteByPkQuery() string {
 	return moviesCompanyDeleteByPkSql
 }
 
-func (m *MoviesCompany) DeleteQuery() string {
-	return moviesCompanyDeleteSql
+func (m *MoviesCompany) DeleteAllQuery() string {
+	return moviesCompanyDeleteAllSql
 }
 
 // language=mysql
 var moviesCompanyAllFieldsWhere = `
-WHERE (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
-  AND (CAST(:company_id AS BIGINT) IS NULL or company_id = :company_id)
+WHERE TRUE
+    AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
+    AND (CAST(:company_id AS BIGINT) IS NULL or company_id = :company_id)
 `
 
 // language=mysql
@@ -109,7 +110,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesCompanyUpdateSql = `
+var moviesCompanyUpdateAllSql = `
 UPDATE app.movies_companies
 SET
   movie_id = :movie_id,
@@ -121,7 +122,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesCompanyCountSql = `
+var moviesCompanyModelCountSql = `
 SELECT count(*) as count
 FROM app.movies_companies
 ` + moviesCompanyAllFieldsWhere + ";"
@@ -150,14 +151,10 @@ LIMIT 1;`
 // language=mysql
 var moviesCompanyDeleteByPkSql = `
 DELETE FROM app.movies_companies
-WHERE movie_id = :movie_id
-  AND company_id = :company_id;
-`
+` + moviesCompanyPkFieldsWhere + ";"
 
-// language=mysql
-var moviesCompanyDeleteSql = `
+// language=postgresql
+var moviesCompanyDeleteAllSql = `
 DELETE FROM app.movies_companies
-WHERE movie_id = :movie_id
-  AND company_id = :company_id;
-`
+` + moviesCompanyAllFieldsWhere + ";"
 

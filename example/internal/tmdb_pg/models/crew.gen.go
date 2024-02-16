@@ -38,14 +38,6 @@ func (c *Crew) InsertQuery() string {
 	return crewInsertSql
 }
 
-func (c *Crew) UpdateAllQuery() string {
-	return crewUpdateAllSql
-}
-
-func (c *Crew) UpdateByPkQuery() string {
-	return crewUpdateByPkSql
-}
-
 func (c *Crew) CountQuery() string {
 	return crewModelCountSql
 }
@@ -70,6 +62,18 @@ func (c *Crew) DeleteAllQuery() string {
 	return crewDeleteAllSql
 }
 
+func (c *Crew) GetPkWhere() string {
+	return crewPkFieldsWhere
+}
+
+func (c *Crew) GetAllFieldsWhere() string {
+	return crewAllFieldsWhere
+}
+
+func (c *Crew) GetReturning() string {
+	return crewReturningFields
+}
+
 // language=postgresql
 var crewAllFieldsWhere = `
 WHERE TRUE
@@ -84,44 +88,21 @@ WHERE id = :id
 `
 
 // language=postgresql
+var crewReturningFields = `
+RETURNING
+  id,
+  name,
+  name_search;
+`
+
+// language=postgresql
 var crewInsertSql = `
 INSERT INTO public.crew(
   name
 )
 VALUES (
   :name
-)
-RETURNING
-  id,
-  name,
-  name_search;
-`
-
-// language=postgresql
-var crewUpdateByPkSql = `
-UPDATE public.crew
-SET
-  id = :id,
-  name = :name
-` + crewPkFieldsWhere + `
-RETURNING
-  id,
-  name,
-  name_search;
-`
-
-// language=postgresql
-var crewUpdateAllSql = `
-UPDATE public.crew
-SET
-  id = :id,
-  name = :name
-` + crewAllFieldsWhere + `
-RETURNING
-  id,
-  name,
-  name_search;
-`
+)` + crewReturningFields + ";"
 
 // language=postgresql
 var crewModelCountSql = `
@@ -155,13 +136,9 @@ LIMIT 1;`
 // language=postgresql
 var crewDeleteByPkSql = `
 DELETE FROM public.crew
-WHERE id = :id;
-`
+` + crewPkFieldsWhere + ";"
 
 // language=postgresql
 var crewDeleteAllSql = `
 DELETE FROM public.crew
-WHERE id = :id
-  AND name = :name
-  AND name_search = :name_search;
-`
+` + crewAllFieldsWhere + ";"

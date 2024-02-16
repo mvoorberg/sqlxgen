@@ -37,8 +37,8 @@ func (m *MoviesCountry) InsertQuery() string {
 	return moviesCountryInsertSql
 }
 
-func (m *MoviesCountry) UpdateQuery() string {
-	return moviesCountryUpdateSql
+func (m *MoviesCountry) UpdateAllQuery() string {
+	return moviesCountryUpdateAllSql
 }
 
 func (m *MoviesCountry) UpdateByPkQuery() string {
@@ -46,7 +46,7 @@ func (m *MoviesCountry) UpdateByPkQuery() string {
 }
 
 func (m *MoviesCountry) CountQuery() string {
-	return moviesCountryCountSql
+	return moviesCountryModelCountSql
 }
 
 func (m *MoviesCountry) FindAllQuery() string {
@@ -65,14 +65,15 @@ func (m *MoviesCountry) DeleteByPkQuery() string {
 	return moviesCountryDeleteByPkSql
 }
 
-func (m *MoviesCountry) DeleteQuery() string {
-	return moviesCountryDeleteSql
+func (m *MoviesCountry) DeleteAllQuery() string {
+	return moviesCountryDeleteAllSql
 }
 
 // language=mysql
 var moviesCountryAllFieldsWhere = `
-WHERE (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
-  AND (CAST(:country_id AS TEXT) IS NULL or country_id = :country_id)
+WHERE TRUE
+    AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
+    AND (CAST(:country_id AS TEXT) IS NULL or country_id = :country_id)
 `
 
 // language=mysql
@@ -109,7 +110,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesCountryUpdateSql = `
+var moviesCountryUpdateAllSql = `
 UPDATE app.movies_countries
 SET
   movie_id = :movie_id,
@@ -121,7 +122,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesCountryCountSql = `
+var moviesCountryModelCountSql = `
 SELECT count(*) as count
 FROM app.movies_countries
 ` + moviesCountryAllFieldsWhere + ";"
@@ -150,14 +151,10 @@ LIMIT 1;`
 // language=mysql
 var moviesCountryDeleteByPkSql = `
 DELETE FROM app.movies_countries
-WHERE movie_id = :movie_id
-  AND country_id = :country_id;
-`
+` + moviesCountryPkFieldsWhere + ";"
 
-// language=mysql
-var moviesCountryDeleteSql = `
+// language=postgresql
+var moviesCountryDeleteAllSql = `
 DELETE FROM app.movies_countries
-WHERE movie_id = :movie_id
-  AND country_id = :country_id;
-`
+` + moviesCountryAllFieldsWhere + ";"
 

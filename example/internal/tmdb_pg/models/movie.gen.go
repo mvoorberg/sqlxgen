@@ -88,14 +88,6 @@ func (m *Movie) InsertQuery() string {
 	return movieInsertSql
 }
 
-func (m *Movie) UpdateAllQuery() string {
-	return movieUpdateAllSql
-}
-
-func (m *Movie) UpdateByPkQuery() string {
-	return movieUpdateByPkSql
-}
-
 func (m *Movie) CountQuery() string {
 	return movieModelCountSql
 }
@@ -118,6 +110,18 @@ func (m *Movie) DeleteByPkQuery() string {
 
 func (m *Movie) DeleteAllQuery() string {
 	return movieDeleteAllSql
+}
+
+func (m *Movie) GetPkWhere() string {
+	return moviePkFieldsWhere
+}
+
+func (m *Movie) GetAllFieldsWhere() string {
+	return movieAllFieldsWhere
+}
+
+func (m *Movie) GetReturning() string {
+	return movieReturningFields
 }
 
 // language=postgresql
@@ -155,6 +159,38 @@ WHERE TRUE
 // language=postgresql
 var moviePkFieldsWhere = `
 WHERE id = :id
+`
+
+// language=postgresql
+var movieReturningFields = `
+RETURNING
+  id,
+  budget,
+  client_id,
+  completed_coordinates,
+  data_synced_at,
+  distance_to_place,
+  homepage,
+  is_completed,
+  keywords,
+  keywords_search,
+  location_accuracy,
+  original_language,
+  original_title,
+  overview,
+  popularity,
+  release_date,
+  revenue,
+  runtime,
+  search_vector,
+  status,
+  summary,
+  synopsis,
+  tagline,
+  title,
+  title_search,
+  vote_average,
+  vote_count;
 `
 
 // language=postgresql
@@ -210,156 +246,7 @@ VALUES (
   :title,
   :vote_average,
   :vote_count
-)
-RETURNING
-  id,
-  budget,
-  client_id,
-  completed_coordinates,
-  data_synced_at,
-  distance_to_place,
-  homepage,
-  is_completed,
-  keywords,
-  keywords_search,
-  location_accuracy,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  release_date,
-  revenue,
-  runtime,
-  search_vector,
-  status,
-  summary,
-  synopsis,
-  tagline,
-  title,
-  title_search,
-  vote_average,
-  vote_count;
-`
-
-// language=postgresql
-var movieUpdateByPkSql = `
-UPDATE public.movies
-SET
-  id = :id,
-  budget = :budget,
-  client_id = :client_id,
-  completed_coordinates = :completed_coordinates,
-  data_synced_at = :data_synced_at,
-  distance_to_place = :distance_to_place,
-  homepage = :homepage,
-  is_completed = :is_completed,
-  keywords = :keywords,
-  location_accuracy = :location_accuracy,
-  original_language = :original_language,
-  original_title = :original_title,
-  overview = :overview,
-  popularity = :popularity,
-  release_date = :release_date,
-  revenue = :revenue,
-  runtime = :runtime,
-  search_vector = :search_vector,
-  status = :status,
-  summary = :summary,
-  synopsis = :synopsis,
-  tagline = :tagline,
-  title = :title,
-  vote_average = :vote_average,
-  vote_count = :vote_count
-` + moviePkFieldsWhere + `
-RETURNING
-  id,
-  budget,
-  client_id,
-  completed_coordinates,
-  data_synced_at,
-  distance_to_place,
-  homepage,
-  is_completed,
-  keywords,
-  keywords_search,
-  location_accuracy,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  release_date,
-  revenue,
-  runtime,
-  search_vector,
-  status,
-  summary,
-  synopsis,
-  tagline,
-  title,
-  title_search,
-  vote_average,
-  vote_count;
-`
-
-// language=postgresql
-var movieUpdateAllSql = `
-UPDATE public.movies
-SET
-  id = :id,
-  budget = :budget,
-  client_id = :client_id,
-  completed_coordinates = :completed_coordinates,
-  data_synced_at = :data_synced_at,
-  distance_to_place = :distance_to_place,
-  homepage = :homepage,
-  is_completed = :is_completed,
-  keywords = :keywords,
-  location_accuracy = :location_accuracy,
-  original_language = :original_language,
-  original_title = :original_title,
-  overview = :overview,
-  popularity = :popularity,
-  release_date = :release_date,
-  revenue = :revenue,
-  runtime = :runtime,
-  search_vector = :search_vector,
-  status = :status,
-  summary = :summary,
-  synopsis = :synopsis,
-  tagline = :tagline,
-  title = :title,
-  vote_average = :vote_average,
-  vote_count = :vote_count
-` + movieAllFieldsWhere + `
-RETURNING
-  id,
-  budget,
-  client_id,
-  completed_coordinates,
-  data_synced_at,
-  distance_to_place,
-  homepage,
-  is_completed,
-  keywords,
-  keywords_search,
-  location_accuracy,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  release_date,
-  revenue,
-  runtime,
-  search_vector,
-  status,
-  summary,
-  synopsis,
-  tagline,
-  title,
-  title_search,
-  vote_average,
-  vote_count;
-`
+)` + movieReturningFields + ";"
 
 // language=postgresql
 var movieModelCountSql = `
@@ -441,37 +328,9 @@ LIMIT 1;`
 // language=postgresql
 var movieDeleteByPkSql = `
 DELETE FROM public.movies
-WHERE id = :id;
-`
+` + moviePkFieldsWhere + ";"
 
 // language=postgresql
 var movieDeleteAllSql = `
 DELETE FROM public.movies
-WHERE id = :id
-  AND budget = :budget
-  AND client_id = :client_id
-  AND completed_coordinates = :completed_coordinates
-  AND data_synced_at = :data_synced_at
-  AND distance_to_place = :distance_to_place
-  AND homepage = :homepage
-  AND is_completed = :is_completed
-  AND keywords = :keywords
-  AND keywords_search = :keywords_search
-  AND location_accuracy = :location_accuracy
-  AND original_language = :original_language
-  AND original_title = :original_title
-  AND overview = :overview
-  AND popularity = :popularity
-  AND release_date = :release_date
-  AND revenue = :revenue
-  AND runtime = :runtime
-  AND search_vector = :search_vector
-  AND status = :status
-  AND summary = :summary
-  AND synopsis = :synopsis
-  AND tagline = :tagline
-  AND title = :title
-  AND title_search = :title_search
-  AND vote_average = :vote_average
-  AND vote_count = :vote_count;
-`
+` + movieAllFieldsWhere + ";"

@@ -70,8 +70,8 @@ func (m *Movie) InsertQuery() string {
 	return movieInsertSql
 }
 
-func (m *Movie) UpdateQuery() string {
-	return movieUpdateSql
+func (m *Movie) UpdateAllQuery() string {
+	return movieUpdateAllSql
 }
 
 func (m *Movie) UpdateByPkQuery() string {
@@ -79,7 +79,7 @@ func (m *Movie) UpdateByPkQuery() string {
 }
 
 func (m *Movie) CountQuery() string {
-	return movieCountSql
+	return movieModelCountSql
 }
 
 func (m *Movie) FindAllQuery() string {
@@ -98,30 +98,31 @@ func (m *Movie) DeleteByPkQuery() string {
 	return movieDeleteByPkSql
 }
 
-func (m *Movie) DeleteQuery() string {
-	return movieDeleteSql
+func (m *Movie) DeleteAllQuery() string {
+	return movieDeleteAllSql
 }
 
 // language=postgresql
 var movieAllFieldsWhere = `
-WHERE (CAST(:id AS INT4) IS NULL or id = :id)
-  AND (CAST(:title AS TEXT) IS NULL or title = :title)
-  AND (CAST(:original_title AS TEXT) IS NULL or original_title = :original_title)
-  AND (CAST(:original_language AS TEXT) IS NULL or original_language = :original_language)
-  AND (CAST(:overview AS TEXT) IS NULL or overview = :overview)
-  AND (CAST(:runtime AS INT4) IS NULL or runtime = :runtime)
-  AND (CAST(:release_date AS DATE) IS NULL or release_date = :release_date)
-  AND (CAST(:tagline AS TEXT) IS NULL or tagline = :tagline)
-  AND (CAST(:status AS TEXT) IS NULL or status = :status)
-  AND (CAST(:homepage AS TEXT) IS NULL or homepage = :homepage)
-  AND (CAST(:popularity AS FLOAT8) IS NULL or popularity = :popularity)
-  AND (CAST(:vote_average AS FLOAT8) IS NULL or vote_average = :vote_average)
-  AND (CAST(:vote_count AS INT4) IS NULL or vote_count = :vote_count)
-  AND (CAST(:budget AS INT8) IS NULL or budget = :budget)
-  AND (CAST(:revenue AS INT8) IS NULL or revenue = :revenue)
-  AND (CAST(:keywords AS TEXT) IS NULL or keywords = :keywords)
-  AND (CAST(:title_search AS TSVECTOR) IS NULL or title_search = :title_search)
-  AND (CAST(:keywords_search AS TSVECTOR) IS NULL or keywords_search = :keywords_search)
+WHERE TRUE
+    AND (CAST(:id AS INT4) IS NULL or id = :id)
+    AND (CAST(:title AS TEXT) IS NULL or title = :title)
+    AND (CAST(:original_title AS TEXT) IS NULL or original_title = :original_title)
+    AND (CAST(:original_language AS TEXT) IS NULL or original_language = :original_language)
+    AND (CAST(:overview AS TEXT) IS NULL or overview = :overview)
+    AND (CAST(:runtime AS INT4) IS NULL or runtime = :runtime)
+    AND (CAST(:release_date AS DATE) IS NULL or release_date = :release_date)
+    AND (CAST(:tagline AS TEXT) IS NULL or tagline = :tagline)
+    AND (CAST(:status AS TEXT) IS NULL or status = :status)
+    AND (CAST(:homepage AS TEXT) IS NULL or homepage = :homepage)
+    AND (CAST(:popularity AS FLOAT8) IS NULL or popularity = :popularity)
+    AND (CAST(:vote_average AS FLOAT8) IS NULL or vote_average = :vote_average)
+    AND (CAST(:vote_count AS INT4) IS NULL or vote_count = :vote_count)
+    AND (CAST(:budget AS INT8) IS NULL or budget = :budget)
+    AND (CAST(:revenue AS INT8) IS NULL or revenue = :revenue)
+    AND (CAST(:keywords AS TEXT) IS NULL or keywords = :keywords)
+    AND (CAST(:title_search AS TSVECTOR) IS NULL or title_search = :title_search)
+    AND (CAST(:keywords_search AS TSVECTOR) IS NULL or keywords_search = :keywords_search)
 `
 
 // language=postgresql
@@ -229,7 +230,7 @@ RETURNING
 `
 
 // language=postgresql
-var movieUpdateSql = `
+var movieUpdateAllSql = `
 UPDATE public.movies
 SET
   id = :id,
@@ -271,7 +272,7 @@ RETURNING
 `
 
 // language=postgresql
-var movieCountSql = `
+var movieModelCountSql = `
 SELECT count(*) as count
 FROM public.movies
 ` + movieAllFieldsWhere + ";"
@@ -332,29 +333,10 @@ LIMIT 1;`
 // language=postgresql
 var movieDeleteByPkSql = `
 DELETE FROM public.movies
-WHERE id = :id;
-`
+` + moviePkFieldsWhere + ";"
 
 // language=postgresql
-var movieDeleteSql = `
+var movieDeleteAllSql = `
 DELETE FROM public.movies
-WHERE id = :id
-  AND title = :title
-  AND original_title = :original_title
-  AND original_language = :original_language
-  AND overview = :overview
-  AND runtime = :runtime
-  AND release_date = :release_date
-  AND tagline = :tagline
-  AND status = :status
-  AND homepage = :homepage
-  AND popularity = :popularity
-  AND vote_average = :vote_average
-  AND vote_count = :vote_count
-  AND budget = :budget
-  AND revenue = :revenue
-  AND keywords = :keywords
-  AND title_search = :title_search
-  AND keywords_search = :keywords_search;
-`
+` + movieAllFieldsWhere + ";"
 

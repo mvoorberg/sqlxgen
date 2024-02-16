@@ -38,14 +38,6 @@ func (a *Actor) InsertQuery() string {
 	return actorInsertSql
 }
 
-func (a *Actor) UpdateAllQuery() string {
-	return actorUpdateAllSql
-}
-
-func (a *Actor) UpdateByPkQuery() string {
-	return actorUpdateByPkSql
-}
-
 func (a *Actor) CountQuery() string {
 	return actorModelCountSql
 }
@@ -70,6 +62,18 @@ func (a *Actor) DeleteAllQuery() string {
 	return actorDeleteAllSql
 }
 
+func (a *Actor) GetPkWhere() string {
+	return actorPkFieldsWhere
+}
+
+func (a *Actor) GetAllFieldsWhere() string {
+	return actorAllFieldsWhere
+}
+
+func (a *Actor) GetReturning() string {
+	return actorReturningFields
+}
+
 // language=postgresql
 var actorAllFieldsWhere = `
 WHERE TRUE
@@ -84,44 +88,21 @@ WHERE id = :id
 `
 
 // language=postgresql
+var actorReturningFields = `
+RETURNING
+  id,
+  name,
+  name_search;
+`
+
+// language=postgresql
 var actorInsertSql = `
 INSERT INTO public.actors(
   name
 )
 VALUES (
   :name
-)
-RETURNING
-  id,
-  name,
-  name_search;
-`
-
-// language=postgresql
-var actorUpdateByPkSql = `
-UPDATE public.actors
-SET
-  id = :id,
-  name = :name
-` + actorPkFieldsWhere + `
-RETURNING
-  id,
-  name,
-  name_search;
-`
-
-// language=postgresql
-var actorUpdateAllSql = `
-UPDATE public.actors
-SET
-  id = :id,
-  name = :name
-` + actorAllFieldsWhere + `
-RETURNING
-  id,
-  name,
-  name_search;
-`
+)` + actorReturningFields + ";"
 
 // language=postgresql
 var actorModelCountSql = `
@@ -155,13 +136,9 @@ LIMIT 1;`
 // language=postgresql
 var actorDeleteByPkSql = `
 DELETE FROM public.actors
-WHERE id = :id;
-`
+` + actorPkFieldsWhere + ";"
 
 // language=postgresql
 var actorDeleteAllSql = `
 DELETE FROM public.actors
-WHERE id = :id
-  AND name = :name
-  AND name_search = :name_search;
-`
+` + actorAllFieldsWhere + ";"

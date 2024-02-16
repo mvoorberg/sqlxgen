@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -26,8 +27,8 @@ func GetTypeName[T any](instance T) string {
 }
 
 func InsertOne[T model[P], P any](db Database, instance T) (T, error) {
-	inserted, err := Insert[T](db, instance)
 
+	inserted, err := Insert[T](db, instance)
 	if err != nil {
 		return nil, err
 	}
@@ -55,16 +56,11 @@ func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 		inserted := new(P)
 
 		err = rows.StructScan(inserted)
-
 		if err != nil {
 			return nil, err
 		}
 
-		err = rows.Close()
-
-		if err != nil {
-			return nil, err
-		}
+		rows.Close()
 
 		inserts = append(inserts, inserted)
 	}
@@ -74,12 +70,45 @@ func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 
 func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
 
-	updateSql := instance.UpdateByPkQuery()
-	rows, err := db.NamedQuery(updateSql, instance)
+	tableName := instance.TableName()
+	pkCols := instance.PrimaryKey()
+	meta := getFieldMetaForUpdate(instance)
 
+	updateSql := fmt.Sprintf("UPDATE %s SET ", tableName)
+	setCols := 0
+	for _, v := range meta {
+
+		isPk := false // Don't update the PK cols!
+		for _, pk := range pkCols {
+			if v.DbName == pk {
+				isPk = true
+				break
+			}
+		}
+		if !isPk && v.ShouldUpdate {
+			if setCols != 0 {
+				updateSql += ","
+			}
+			updateSql += fmt.Sprintf("\n  %s = :%s", v.DbName, v.DbName)
+			setCols++
+		}
+	}
+	if setCols == 0 {
+		return nil, fmt.Errorf("no fields to update on %s", GetTypeName(instance))
+	}
+	updateSql += instance.GetPkWhere()
+	updateSql += instance.GetReturning()
+
+	return updateSingle[T, P](db, updateSql, instance)
+}
+
+func updateSingle[T model[P], P any](db Database, updateSql string, instance T) (T, error) {
+
+	rows, err := db.NamedQuery(updateSql, instance)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	hasNext := rows.Next()
 	if !hasNext {
@@ -92,90 +121,63 @@ func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
 		return nil, err
 	}
 
-	err = rows.Close()
-	if err != nil {
-		return nil, err
-	}
-
 	return updated, nil
-}
-
-func UpdateOne[T model[P], P any](db Database, instance T) (T, error) {
-
-	count, err := Count[T](db, instance)
-	if err != nil {
-		return nil, err
-	}
-	if *count != 1 {
-		return nil, fmt.Errorf("update-one %s would have matched %d rows", GetTypeName(instance), *count)
-	}
-
-	updates, err := UpdateMany[T](db, instance)
-
-	if err != nil {
-		return nil, err
-	}
-	return updates[0], nil
 }
 
 func UpdateMany[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	updates := make([]T, 0)
 
+	// TODO: put this in a transaction and fail them all together
 	for _, instance := range instances {
-		updateSql := instance.UpdateAllQuery()
-		rows, err := db.NamedQuery(updateSql, instance)
-
+		updated, err := UpdateByPk[T](db, instance)
 		if err != nil {
 			return nil, err
 		}
-
-		hasNext := rows.Next()
-
-		if !hasNext {
-			return nil, fmt.Errorf("unable to update %s", GetTypeName(instance))
-		}
-
-		updated := new(P)
-
-		err = rows.StructScan(updated)
-
-		if err != nil {
-			return nil, err
-		}
-
-		err = rows.Close()
-
-		if err != nil {
-			return nil, err
-		}
-
 		updates = append(updates, updated)
 	}
 
 	return updates, nil
 }
 
-func Count[T model[P], P any](db Database, instance T) (*int64, error) {
+func CountPtr[T model[P], P any](db Database, instance T) (*int64, error) {
+	countSql := instance.CountQuery()
+	return count(db, countSql, instance)
+}
+
+func Count[T model[P], P any](db Database, instance T) (int, error) {
+	result, err := CountPtr[T](db, instance)
+	if err != nil {
+		return -1, err
+	}
+	return int(*result), nil
+}
+
+func CountSql(db Database, countSql string, args interface{}) (int, error) {
+	result, err := count(db, countSql, args)
+	if err != nil {
+		return -1, err
+	}
+	return int(*result), nil
+}
+
+func count(db Database, countSql string, instance interface{}) (*int64, error) {
 	type CountResult struct {
 		Count int64 `db:"count"`
 	}
 	countResult := new(CountResult)
 
-	countSql := instance.CountQuery()
 	rows, err := db.NamedQuery(countSql, instance)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func(rows *sqlx.Rows) {
-		_ = rows.Close()
-	}(rows)
+	defer rows.Close()
 
 	hasNext := rows.Next()
 	if !hasNext {
-		msg := fmt.Sprintf("count '%s' failed", GetTypeName(instance))
+		msg := fmt.Sprintf("count %s failed", GetTypeName(instance))
 
-		return nil, fmt.Errorf(msg, ErrNotFound)
+		return nil, fmt.Errorf(msg)
 	}
 
 	err = rows.StructScan(countResult)
@@ -184,36 +186,6 @@ func Count[T model[P], P any](db Database, instance T) (*int64, error) {
 	}
 
 	return &countResult.Count, nil
-}
-
-func findSingle[T model[P], P any](db Database, instance T, sqlQuery string) (T, error) {
-	result := new(P)
-
-	rows, err := db.NamedQuery(sqlQuery, instance)
-
-	if err != nil {
-		return result, err
-	}
-
-	defer func(rows *sqlx.Rows) {
-		_ = rows.Close()
-	}(rows)
-
-	hasNext := rows.Next()
-
-	if !hasNext {
-		msg := fmt.Sprintf("'%s' not found", GetTypeName(instance))
-
-		return result, fmt.Errorf(msg, ErrNotFound)
-	}
-
-	err = rows.StructScan(result)
-
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
 }
 
 type QueryOptions struct {
@@ -241,80 +213,121 @@ func FindPage[T model[P], P any](db Database, instance T, queryOpts *QueryOption
 			whereSql := strings.Split(findAllSql, fromSql)[1]
 			findAllSql = fmt.Sprintf("SELECT %s %s %s", strings.Join(selectList, ", "), fromSql, whereSql)
 		}
-		if queryOpts.Paginator != nil {
-			pager := *queryOpts.Paginator
-			findAllSql = strings.TrimRight(findAllSql, "\r\n;")
-			if queryOpts.OrderBy != nil {
-				findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
-			}
-			if pager.PageSize != 0 {
-				findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
-			}
-			findAllSql += ";"
+
+		findAllSql = strings.TrimRight(findAllSql, "\r\n;")
+		if queryOpts.OrderBy != nil {
+			findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
 		} else {
-			if queryOpts.OrderBy != nil {
-				findAllSql += fmt.Sprintf(" ORDER BY %s", *queryOpts.OrderBy)
-			}
+			findAllSql += " ORDER BY 1"
+		}
+
+		pager := *queryOpts.Paginator
+		if queryOpts.Paginator != nil && pager.PageSize > 0 && pager.Page > 0 {
+			findAllSql += fmt.Sprintf(" LIMIT %d OFFSET %d", pager.PageSize, (pager.Page-1)*pager.PageSize)
 		}
 	}
-	return findMany[T](db, instance, findAllSql)
+	return findMany[T](db, instance, findAllSql, false)
 }
 
-func findMany[T model[P], P any](db Database, instance T, sqlQuery string) ([]T, error) {
+func FindManySql[T model[P], P any](db Database, querySQL string, args interface{}) ([]T, error) {
+	return findMany[T](db, args, querySQL, false)
+}
+
+func findMany[T model[P], P any](db Database, instance interface{}, sqlQuery string, failOnMulti bool) ([]T, error) {
+	if instance == nil {
+		instance = struct{}{}
+	}
 	rows, err := db.NamedQuery(sqlQuery, instance)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer func(rows *sqlx.Rows) {
-		_ = rows.Close()
-	}(rows)
+	defer rows.Close()
 
+	idx := 0
 	result := make([]T, 0)
 
 	for rows.Next() {
-		instance := new(P)
+		if failOnMulti && idx > 0 {
+			return nil, ErrFoundMultiple
+		}
+		rowInstance := new(P)
 
-		err = rows.StructScan(instance)
+		err = rows.StructScan(rowInstance)
 
 		if err != nil {
 			return nil, err
 		}
 
-		result = append(result, instance)
+		idx++
+		result = append(result, rowInstance)
 	}
 
 	return result, nil
 }
 
-func Find[T model[P], P any](db Database, instance T) (T, error) {
-	// ** Deprecated:
-	//    Use FindFirst or FindOne depending on your expectation if > 1 rows match criteria.
-	return FindFirst(db, instance)
-}
-
 // Find limit 1
 func FindFirst[T model[P], P any](db Database, instance T) (T, error) {
-	return findSingle(db, instance, instance.FindFirstQuery())
+	return findSingle[T](db, instance, instance.FindFirstQuery())
 }
 
 // Find and return 1, err if > 1
 func FindOne[T model[P], P any](db Database, instance T) (T, error) {
-	limitedQuery := strings.TrimRight(instance.FindAllQuery(), ";") + " LIMIT 2;"
+	querySql := instance.FindAllQuery()
 
-	result, err := findMany[T](db, instance, limitedQuery)
+	result, err := findMany[T](db, instance, querySql, true)
 	if err != nil {
 		return nil, err
-	}
-	if len(result) > 1 {
-		return nil, ErrFoundMultiple
 	}
 	return result[0], nil
 }
 
 func FindByPk[T model[P], P any](db Database, instance T) (T, error) {
-	return findSingle(db, instance, instance.FindByPkQuery())
+	return findSingle[T](db, instance, instance.FindByPkQuery())
+}
+
+func FindOneSql[T model[P], P any](db Database, querySQL string, args interface{}) (T, error) {
+	result, err := findMany[T](db, args, querySQL, true)
+	if err != nil {
+		return nil, err
+	}
+	return result[0], nil
+}
+
+func FindFirstSql[T model[P], P any](db Database, querySQL string, args interface{}) (T, error) {
+	return findSingle[T](db, args, querySQL)
+}
+
+func findSingle[T model[P], P any](db Database, instance interface{}, sqlQuery string) (T, error) {
+	if instance == nil {
+		instance = struct{}{}
+	}
+
+	result := new(P)
+
+	rows, err := db.NamedQuery(sqlQuery, instance)
+	if err != nil {
+		return result, err
+	}
+
+	defer rows.Close()
+
+	hasNext := rows.Next()
+
+	if !hasNext {
+		msg := fmt.Sprintf("%s not found", GetTypeName(instance))
+
+		return result, fmt.Errorf(msg)
+	}
+
+	err = rows.StructScan(result)
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
 
 // Delete by Pk, err if not found
@@ -341,11 +354,11 @@ func DeleteOne[T model[P], P any](db Database, instance T) error {
 	if err != nil {
 		return err
 	}
-	if *count != 1 {
-		return fmt.Errorf("delete-one %s would have matched %d rows", GetTypeName(instance), *count)
+	if count != 1 {
+		return fmt.Errorf("delete-one %s would have matched %d rows", GetTypeName(instance), count)
 	}
 
-	_, err = Delete[T](db, instance)
+	_, err = DeleteAll[T](db, instance)
 
 	return err
 }
@@ -369,8 +382,6 @@ type model[P any] interface {
 	PrimaryKey() []string
 
 	InsertQuery() string
-	UpdateAllQuery() string
-	UpdateByPkQuery() string
 
 	CountQuery() string
 	FindFirstQuery() string
@@ -378,14 +389,13 @@ type model[P any] interface {
 	FindAllQuery() string
 
 	DeleteByPkQuery() string
-	DeleteQuery() string
+	DeleteAllQuery() string
+
+	GetReturning() string
+	GetPkWhere() string
+	GetAllFieldsWhere() string
 }
 
-// Custom sql query used like:
-//
-//	func (args *CatalogQryArgs) Query(db store.Database) ([]*CatalogQryResult, error) {
-//		return store.Query[*CatalogQryResult](db, args)
-//	}
 func Query[R result[pR], Q queryable[pQ], pR, pQ any](db Database, args Q) ([]R, error) {
 	re, err := regexp.Compile(`-{2,}\s*([\w\W\s\S]*?)(\n|\z)`)
 
@@ -394,22 +404,17 @@ func Query[R result[pR], Q queryable[pQ], pR, pQ any](db Database, args Q) ([]R,
 	}
 
 	query := re.ReplaceAllString(args.Sql(), "$2")
-
 	rows, err := db.NamedQuery(query, args)
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer func(rows *sqlx.Rows) {
-		_ = rows.Close()
-	}(rows)
-
+	defer rows.Close()
 	result := make([]R, 0)
 
 	for rows.Next() {
 		instance := new(pR)
-
 		err = rows.StructScan(instance)
 
 		if err != nil {
@@ -418,13 +423,6 @@ func Query[R result[pR], Q queryable[pQ], pR, pQ any](db Database, args Q) ([]R,
 
 		result = append(result, instance)
 	}
-
-	err = rows.Close()
-
-	if err != nil {
-		return nil, err
-	}
-
 	return result, nil
 }
 
@@ -569,6 +567,111 @@ func BulkInsert[T model[P], P any](db *sqlx.DB, ctx context.Context, itemsToSave
 	tx.Commit()
 
 	return items, nil
+}
+
+// *************************
+// starting partial Update!
+// *************************
+
+var SET_NULL = struct {
+	STRING      string
+	INT         int
+	INT16       int16
+	INT32       int32
+	INT64       int64
+	FLOAT32     float32
+	FLOAT64     float64
+	BOOL        bool
+	TIME        time.Time
+	BYTE        byte
+	JSON_RAW    string // json.RawMessage
+	JSON_ARRAY  string // lib.JsonArray
+	JSON_OBJECT string // lib.JsonObject
+}{
+	STRING:      "",
+	INT:         0,
+	INT16:       0,
+	INT32:       0,
+	INT64:       0,
+	FLOAT32:     0.0,
+	FLOAT64:     0.0,
+	BOOL:        false,
+	TIME:        time.Time{},
+	BYTE:        0,
+	JSON_RAW:    "", // json.RawMessage{},
+	JSON_ARRAY:  "", // lib.JsonArray{},
+	JSON_OBJECT: "", // lib.JsonObject{},
+}
+
+var NULL_STRING string = "NULL"
+
+// var nullPtr *string = &NULL_STRING
+
+type UpdateObjectMetadata struct {
+	DbName        string
+	FieldValue    any
+	FieldType     string
+	ShouldSetNull bool
+	ShouldUpdate  bool
+}
+
+func rUpdateMeta(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
+
+	if rv.Kind() != reflect.Struct {
+		return
+	}
+
+	fields = make(map[string]UpdateObjectMetadata)
+
+	for i := 0; i < rv.NumField(); i++ {
+
+		fieldName := rv.Type().Field(i).Name
+		f := reflect.Indirect(rv).FieldByName(fieldName)
+
+		if f.Kind() != reflect.Struct {
+			fieldType := rv.Type().Field(i).Type.String()
+			fieldTag := rv.Type().Field(i).Tag
+
+			var shouldUpdate bool = false
+			var shouldSetNull bool = false
+
+			if !f.IsNil() {
+				fieldVal := f.Interface()
+				if fieldVal == &SET_NULL.STRING || fieldVal == &SET_NULL.INT || fieldVal == &SET_NULL.INT32 || fieldVal == &SET_NULL.INT64 || fieldVal == &SET_NULL.FLOAT32 || fieldVal == &SET_NULL.FLOAT64 || fieldVal == &SET_NULL.BOOL || fieldVal == &SET_NULL.TIME || fieldVal == &SET_NULL.BYTE || fieldVal == &SET_NULL.JSON_RAW {
+					shouldSetNull = true
+				}
+				shouldUpdate = true
+			}
+
+			fields[fieldName] = UpdateObjectMetadata{
+				DbName:        fieldTag.Get("db"),
+				FieldType:     fieldType,
+				ShouldSetNull: shouldSetNull,
+				ShouldUpdate:  shouldUpdate,
+			}
+		}
+	}
+
+	for i := 0; i < rv.NumField(); i++ {
+		f := rv.Field(i)
+
+		// recurse each field to see if that field is also an embedded struct
+		newfields := rUpdateMeta(f)
+
+		// merge the new fields into the fields map
+		for k, v := range newfields {
+			fields[k] = v
+		}
+	}
+	return fields
+}
+
+func getFieldMetaForUpdate[T model[P], P any](instance T) (fields map[string]UpdateObjectMetadata) {
+
+	instancePtr := *instance
+	fields = rUpdateMeta(reflect.ValueOf(instancePtr))
+
+	return fields
 }
 
 // *************************

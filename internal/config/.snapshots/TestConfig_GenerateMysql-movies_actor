@@ -41,8 +41,8 @@ func (m *MoviesActor) InsertQuery() string {
 	return moviesActorInsertSql
 }
 
-func (m *MoviesActor) UpdateQuery() string {
-	return moviesActorUpdateSql
+func (m *MoviesActor) UpdateAllQuery() string {
+	return moviesActorUpdateAllSql
 }
 
 func (m *MoviesActor) UpdateByPkQuery() string {
@@ -50,7 +50,7 @@ func (m *MoviesActor) UpdateByPkQuery() string {
 }
 
 func (m *MoviesActor) CountQuery() string {
-	return moviesActorCountSql
+	return moviesActorModelCountSql
 }
 
 func (m *MoviesActor) FindAllQuery() string {
@@ -69,16 +69,17 @@ func (m *MoviesActor) DeleteByPkQuery() string {
 	return moviesActorDeleteByPkSql
 }
 
-func (m *MoviesActor) DeleteQuery() string {
-	return moviesActorDeleteSql
+func (m *MoviesActor) DeleteAllQuery() string {
+	return moviesActorDeleteAllSql
 }
 
 // language=mysql
 var moviesActorAllFieldsWhere = `
-WHERE (CAST(:cast AS TEXT) IS NULL or cast = :cast)
-  AND (CAST(:cast_order AS INT) IS NULL or cast_order = :cast_order)
-  AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
-  AND (CAST(:actor_id AS BIGINT) IS NULL or actor_id = :actor_id)
+WHERE TRUE
+    AND (CAST(:cast AS TEXT) IS NULL or cast = :cast)
+    AND (CAST(:cast_order AS INT) IS NULL or cast_order = :cast_order)
+    AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
+    AND (CAST(:actor_id AS BIGINT) IS NULL or actor_id = :actor_id)
 `
 
 // language=mysql
@@ -125,7 +126,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesActorUpdateSql = `
+var moviesActorUpdateAllSql = `
 UPDATE app.movies_actors
 SET
   cast = :cast,
@@ -141,7 +142,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesActorCountSql = `
+var moviesActorModelCountSql = `
 SELECT count(*) as count
 FROM app.movies_actors
 ` + moviesActorAllFieldsWhere + ";"
@@ -174,16 +175,10 @@ LIMIT 1;`
 // language=mysql
 var moviesActorDeleteByPkSql = `
 DELETE FROM app.movies_actors
-WHERE movie_id = :movie_id
-  AND actor_id = :actor_id;
-`
+` + moviesActorPkFieldsWhere + ";"
 
-// language=mysql
-var moviesActorDeleteSql = `
+// language=postgresql
+var moviesActorDeleteAllSql = `
 DELETE FROM app.movies_actors
-WHERE cast = :cast
-  AND cast_order = :cast_order
-  AND movie_id = :movie_id
-  AND actor_id = :actor_id;
-`
+` + moviesActorAllFieldsWhere + ";"
 

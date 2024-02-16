@@ -36,8 +36,8 @@ func (c *Crew) InsertQuery() string {
 	return crewInsertSql
 }
 
-func (c *Crew) UpdateQuery() string {
-	return crewUpdateSql
+func (c *Crew) UpdateAllQuery() string {
+	return crewUpdateAllSql
 }
 
 func (c *Crew) UpdateByPkQuery() string {
@@ -45,7 +45,7 @@ func (c *Crew) UpdateByPkQuery() string {
 }
 
 func (c *Crew) CountQuery() string {
-	return crewCountSql
+	return crewModelCountSql
 }
 
 func (c *Crew) FindAllQuery() string {
@@ -64,14 +64,15 @@ func (c *Crew) DeleteByPkQuery() string {
 	return crewDeleteByPkSql
 }
 
-func (c *Crew) DeleteQuery() string {
-	return crewDeleteSql
+func (c *Crew) DeleteAllQuery() string {
+	return crewDeleteAllSql
 }
 
 // language=mysql
 var crewAllFieldsWhere = `
-WHERE (CAST(:name AS TEXT) IS NULL or name = :name)
-  AND (CAST(:id AS BIGINT) IS NULL or id = :id)
+WHERE TRUE
+    AND (CAST(:name AS TEXT) IS NULL or name = :name)
+    AND (CAST(:id AS BIGINT) IS NULL or id = :id)
 `
 
 // language=mysql
@@ -105,7 +106,7 @@ RETURNING
 `
 
 // language=mysql
-var crewUpdateSql = `
+var crewUpdateAllSql = `
 UPDATE app.crew
 SET
   name = :name,
@@ -117,7 +118,7 @@ RETURNING
 `
 
 // language=mysql
-var crewCountSql = `
+var crewModelCountSql = `
 SELECT count(*) as count
 FROM app.crew
 ` + crewAllFieldsWhere + ";"
@@ -146,12 +147,9 @@ LIMIT 1;`
 // language=mysql
 var crewDeleteByPkSql = `
 DELETE FROM app.crew
-WHERE id = :id;
-`
+` + crewPkFieldsWhere + ";"
 
-// language=mysql
-var crewDeleteSql = `
+// language=postgresql
+var crewDeleteAllSql = `
 DELETE FROM app.crew
-WHERE name = :name
-  AND id = :id;
-`
+` + crewAllFieldsWhere + ";"

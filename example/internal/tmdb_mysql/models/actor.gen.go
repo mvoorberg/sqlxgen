@@ -36,8 +36,8 @@ func (a *Actor) InsertQuery() string {
 	return actorInsertSql
 }
 
-func (a *Actor) UpdateQuery() string {
-	return actorUpdateSql
+func (a *Actor) UpdateAllQuery() string {
+	return actorUpdateAllSql
 }
 
 func (a *Actor) UpdateByPkQuery() string {
@@ -45,7 +45,7 @@ func (a *Actor) UpdateByPkQuery() string {
 }
 
 func (a *Actor) CountQuery() string {
-	return actorCountSql
+	return actorModelCountSql
 }
 
 func (a *Actor) FindAllQuery() string {
@@ -64,14 +64,15 @@ func (a *Actor) DeleteByPkQuery() string {
 	return actorDeleteByPkSql
 }
 
-func (a *Actor) DeleteQuery() string {
-	return actorDeleteSql
+func (a *Actor) DeleteAllQuery() string {
+	return actorDeleteAllSql
 }
 
 // language=mysql
 var actorAllFieldsWhere = `
-WHERE (CAST(:name AS TEXT) IS NULL or name = :name)
-  AND (CAST(:id AS BIGINT) IS NULL or id = :id)
+WHERE TRUE
+    AND (CAST(:name AS TEXT) IS NULL or name = :name)
+    AND (CAST(:id AS BIGINT) IS NULL or id = :id)
 `
 
 // language=mysql
@@ -105,7 +106,7 @@ RETURNING
 `
 
 // language=mysql
-var actorUpdateSql = `
+var actorUpdateAllSql = `
 UPDATE app.actors
 SET
   name = :name,
@@ -117,7 +118,7 @@ RETURNING
 `
 
 // language=mysql
-var actorCountSql = `
+var actorModelCountSql = `
 SELECT count(*) as count
 FROM app.actors
 ` + actorAllFieldsWhere + ";"
@@ -146,12 +147,9 @@ LIMIT 1;`
 // language=mysql
 var actorDeleteByPkSql = `
 DELETE FROM app.actors
-WHERE id = :id;
-`
+` + actorPkFieldsWhere + ";"
 
-// language=mysql
-var actorDeleteSql = `
+// language=postgresql
+var actorDeleteAllSql = `
 DELETE FROM app.actors
-WHERE name = :name
-  AND id = :id;
-`
+` + actorAllFieldsWhere + ";"

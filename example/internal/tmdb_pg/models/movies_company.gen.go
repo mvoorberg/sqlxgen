@@ -37,14 +37,6 @@ func (m *MoviesCompany) InsertQuery() string {
 	return moviesCompanyInsertSql
 }
 
-func (m *MoviesCompany) UpdateAllQuery() string {
-	return moviesCompanyUpdateAllSql
-}
-
-func (m *MoviesCompany) UpdateByPkQuery() string {
-	return moviesCompanyUpdateByPkSql
-}
-
 func (m *MoviesCompany) CountQuery() string {
 	return moviesCompanyModelCountSql
 }
@@ -69,6 +61,18 @@ func (m *MoviesCompany) DeleteAllQuery() string {
 	return moviesCompanyDeleteAllSql
 }
 
+func (m *MoviesCompany) GetPkWhere() string {
+	return moviesCompanyPkFieldsWhere
+}
+
+func (m *MoviesCompany) GetAllFieldsWhere() string {
+	return moviesCompanyAllFieldsWhere
+}
+
+func (m *MoviesCompany) GetReturning() string {
+	return moviesCompanyReturningFields
+}
+
 // language=postgresql
 var moviesCompanyAllFieldsWhere = `
 WHERE TRUE
@@ -83,6 +87,13 @@ WHERE movie_id = :movie_id
 `
 
 // language=postgresql
+var moviesCompanyReturningFields = `
+RETURNING
+  movie_id,
+  company_id;
+`
+
+// language=postgresql
 var moviesCompanyInsertSql = `
 INSERT INTO public.movies_companies(
   movie_id,
@@ -91,35 +102,7 @@ INSERT INTO public.movies_companies(
 VALUES (
   :movie_id,
   :company_id
-)
-RETURNING
-  movie_id,
-  company_id;
-`
-
-// language=postgresql
-var moviesCompanyUpdateByPkSql = `
-UPDATE public.movies_companies
-SET
-  movie_id = :movie_id,
-  company_id = :company_id
-` + moviesCompanyPkFieldsWhere + `
-RETURNING
-  movie_id,
-  company_id;
-`
-
-// language=postgresql
-var moviesCompanyUpdateAllSql = `
-UPDATE public.movies_companies
-SET
-  movie_id = :movie_id,
-  company_id = :company_id
-` + moviesCompanyAllFieldsWhere + `
-RETURNING
-  movie_id,
-  company_id;
-`
+)` + moviesCompanyReturningFields + ";"
 
 // language=postgresql
 var moviesCompanyModelCountSql = `
@@ -151,13 +134,9 @@ LIMIT 1;`
 // language=postgresql
 var moviesCompanyDeleteByPkSql = `
 DELETE FROM public.movies_companies
-WHERE movie_id = :movie_id
-  AND company_id = :company_id;
-`
+` + moviesCompanyPkFieldsWhere + ";"
 
 // language=postgresql
 var moviesCompanyDeleteAllSql = `
 DELETE FROM public.movies_companies
-WHERE movie_id = :movie_id
-  AND company_id = :company_id;
-`
+` + moviesCompanyAllFieldsWhere + ";"

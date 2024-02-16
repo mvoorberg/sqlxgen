@@ -55,8 +55,8 @@ func ({{ $receiverName }} *{{ .PascalName }}) InsertQuery() string {
   return {{ .CamelName }}InsertSql
 }
 
-func ({{ $receiverName }} *{{ .PascalName }}) UpdateQuery() string {
-  return {{ .CamelName }}UpdateSql
+func ({{ $receiverName }} *{{ .PascalName }}) UpdateAllQuery() string {
+  return {{ .CamelName }}UpdateAllSql
 }
 
 func ({{ $receiverName }} *{{ .PascalName }}) UpdateByPkQuery() string {
@@ -64,7 +64,7 @@ func ({{ $receiverName }} *{{ .PascalName }}) UpdateByPkQuery() string {
 }
 
 func ({{ $receiverName }} *{{ .PascalName }}) CountQuery() string {
-  return {{ .CamelName }}CountSql
+  return {{ .CamelName }}ModelCountSql
 }
 
 func ({{ $receiverName }} *{{ .PascalName }}) FindAllQuery() string {
@@ -83,14 +83,19 @@ func ({{ $receiverName }} *{{ .PascalName }}) DeleteByPkQuery() string {
   return {{ .CamelName }}DeleteByPkSql
 }
 
-func ({{ $receiverName }} *{{ .PascalName }}) DeleteQuery() string {
-  return {{ .CamelName }}DeleteSql
+func ({{ $receiverName }} *{{ .PascalName }}) DeleteAllQuery() string {
+  return {{ .CamelName }}DeleteAllSql
 }
 
 // language=mysql
 var {{ .CamelName }}AllFieldsWhere = `
+WHERE TRUE
 {{- range $i, $f := $selectFields }}
-{{ if (isFirst $i) }}WHERE{{ else }}  AND{{ end }} (CAST(:{{ .Column.ColumnName }} AS {{ .Column.Type | ToUpper }}) IS NULL or {{ .Column.ColumnName }} = :{{ .Column.ColumnName }})
+  {{- if eq .Column.Type "interface{}" "point"  "array" "geography" "hstore" }}
+    -- {{ .Column.ColumnName }} / {{ .Column.Type | ToUpper }} is not supported here
+  {{- else }}
+    AND (CAST(:{{ .Column.ColumnName }} AS {{ .Column.Type | ToUpper }}) IS NULL or {{ .Column.ColumnName }} = :{{ .Column.ColumnName }})
+  {{- end }}
 {{- end }}
 `
 
@@ -138,7 +143,7 @@ RETURNING
 `
 
 // language=mysql
-var {{ .CamelName }}UpdateSql = `
+var {{ .CamelName }}UpdateAllSql = `
 UPDATE {{ .Table.SchemaName }}.{{ .Table.TableName }}
 SET
 {{- range $i, $f := $updateFields }}
@@ -152,7 +157,7 @@ RETURNING
 `
 
 // language=mysql
-var {{ .CamelName }}CountSql = `
+var {{ .CamelName }}ModelCountSql = `
 SELECT count(*) as count
 FROM {{ .Table.SchemaName }}.{{ .Table.TableName }}
 ` + {{ .CamelName }}AllFieldsWhere + ";"
@@ -183,17 +188,11 @@ LIMIT 1;`
 // language=mysql
 var {{ .CamelName }}DeleteByPkSql = `
 DELETE FROM {{ .Table.SchemaName }}.{{ .Table.TableName }}
-{{- range $i, $f := $pkFields }}
-{{ if (isFirst $i) }}WHERE{{ else }}  AND{{ end }} {{ .Column.ColumnName }} = :{{ .Column.ColumnName }}
-{{- end }};
-`
+` + {{ .CamelName }}PkFieldsWhere + ";"
 
-// language=mysql
-var {{ .CamelName }}DeleteSql = `
+// language=postgresql
+var {{ .CamelName }}DeleteAllSql = `
 DELETE FROM {{ .Table.SchemaName }}.{{ .Table.TableName }}
-{{- range $i, $f := $selectFields }}
-{{ if (isFirst $i) }}WHERE{{ else }}  AND{{ end }} {{ .Column.ColumnName }} = :{{ .Column.ColumnName }}
-{{- end }};
-`
+` + {{ .CamelName }}AllFieldsWhere + ";"
 
 {{- end }}

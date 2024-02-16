@@ -37,8 +37,8 @@ func (m *MoviesGenre) InsertQuery() string {
 	return moviesGenreInsertSql
 }
 
-func (m *MoviesGenre) UpdateQuery() string {
-	return moviesGenreUpdateSql
+func (m *MoviesGenre) UpdateAllQuery() string {
+	return moviesGenreUpdateAllSql
 }
 
 func (m *MoviesGenre) UpdateByPkQuery() string {
@@ -46,7 +46,7 @@ func (m *MoviesGenre) UpdateByPkQuery() string {
 }
 
 func (m *MoviesGenre) CountQuery() string {
-	return moviesGenreCountSql
+	return moviesGenreModelCountSql
 }
 
 func (m *MoviesGenre) FindAllQuery() string {
@@ -65,14 +65,15 @@ func (m *MoviesGenre) DeleteByPkQuery() string {
 	return moviesGenreDeleteByPkSql
 }
 
-func (m *MoviesGenre) DeleteQuery() string {
-	return moviesGenreDeleteSql
+func (m *MoviesGenre) DeleteAllQuery() string {
+	return moviesGenreDeleteAllSql
 }
 
 // language=mysql
 var moviesGenreAllFieldsWhere = `
-WHERE (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
-  AND (CAST(:genre_id AS TEXT) IS NULL or genre_id = :genre_id)
+WHERE TRUE
+    AND (CAST(:movie_id AS BIGINT) IS NULL or movie_id = :movie_id)
+    AND (CAST(:genre_id AS TEXT) IS NULL or genre_id = :genre_id)
 `
 
 // language=mysql
@@ -109,7 +110,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesGenreUpdateSql = `
+var moviesGenreUpdateAllSql = `
 UPDATE app.movies_genres
 SET
   movie_id = :movie_id,
@@ -121,7 +122,7 @@ RETURNING
 `
 
 // language=mysql
-var moviesGenreCountSql = `
+var moviesGenreModelCountSql = `
 SELECT count(*) as count
 FROM app.movies_genres
 ` + moviesGenreAllFieldsWhere + ";"
@@ -150,14 +151,10 @@ LIMIT 1;`
 // language=mysql
 var moviesGenreDeleteByPkSql = `
 DELETE FROM app.movies_genres
-WHERE movie_id = :movie_id
-  AND genre_id = :genre_id;
-`
+` + moviesGenrePkFieldsWhere + ";"
 
-// language=mysql
-var moviesGenreDeleteSql = `
+// language=postgresql
+var moviesGenreDeleteAllSql = `
 DELETE FROM app.movies_genres
-WHERE movie_id = :movie_id
-  AND genre_id = :genre_id;
-`
+` + moviesGenreAllFieldsWhere + ";"
 

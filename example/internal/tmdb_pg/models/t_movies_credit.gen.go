@@ -44,14 +44,6 @@ func (t *TMoviesCredit) InsertQuery() string {
 	return tMoviesCreditInsertSql
 }
 
-func (t *TMoviesCredit) UpdateAllQuery() string {
-	return tMoviesCreditUpdateAllSql
-}
-
-func (t *TMoviesCredit) UpdateByPkQuery() string {
-	return tMoviesCreditUpdateByPkSql
-}
-
 func (t *TMoviesCredit) CountQuery() string {
 	return tMoviesCreditModelCountSql
 }
@@ -76,6 +68,18 @@ func (t *TMoviesCredit) DeleteAllQuery() string {
 	return tMoviesCreditDeleteAllSql
 }
 
+func (t *TMoviesCredit) GetPkWhere() string {
+	return tMoviesCreditPkFieldsWhere
+}
+
+func (t *TMoviesCredit) GetAllFieldsWhere() string {
+	return tMoviesCreditAllFieldsWhere
+}
+
+func (t *TMoviesCredit) GetReturning() string {
+	return tMoviesCreditReturningFields
+}
+
 // language=postgresql
 var tMoviesCreditAllFieldsWhere = `
 WHERE TRUE
@@ -94,6 +98,15 @@ WHERE casting = :casting
 `
 
 // language=postgresql
+var tMoviesCreditReturningFields = `
+RETURNING
+  casting,
+  crew,
+  movie_id,
+  title;
+`
+
+// language=postgresql
 var tMoviesCreditInsertSql = `
 INSERT INTO public.t_movies_credits(
   casting,
@@ -106,45 +119,7 @@ VALUES (
   :crew,
   :movie_id,
   :title
-)
-RETURNING
-  casting,
-  crew,
-  movie_id,
-  title;
-`
-
-// language=postgresql
-var tMoviesCreditUpdateByPkSql = `
-UPDATE public.t_movies_credits
-SET
-  casting = :casting,
-  crew = :crew,
-  movie_id = :movie_id,
-  title = :title
-` + tMoviesCreditPkFieldsWhere + `
-RETURNING
-  casting,
-  crew,
-  movie_id,
-  title;
-`
-
-// language=postgresql
-var tMoviesCreditUpdateAllSql = `
-UPDATE public.t_movies_credits
-SET
-  casting = :casting,
-  crew = :crew,
-  movie_id = :movie_id,
-  title = :title
-` + tMoviesCreditAllFieldsWhere + `
-RETURNING
-  casting,
-  crew,
-  movie_id,
-  title;
-`
+)` + tMoviesCreditReturningFields + ";"
 
 // language=postgresql
 var tMoviesCreditModelCountSql = `
@@ -180,17 +155,9 @@ LIMIT 1;`
 // language=postgresql
 var tMoviesCreditDeleteByPkSql = `
 DELETE FROM public.t_movies_credits
-WHERE casting = :casting
-  AND crew = :crew
-  AND movie_id = :movie_id
-  AND title = :title;
-`
+` + tMoviesCreditPkFieldsWhere + ";"
 
 // language=postgresql
 var tMoviesCreditDeleteAllSql = `
 DELETE FROM public.t_movies_credits
-WHERE casting = :casting
-  AND crew = :crew
-  AND movie_id = :movie_id
-  AND title = :title;
-`
+` + tMoviesCreditAllFieldsWhere + ";"

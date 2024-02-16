@@ -74,14 +74,6 @@ func (t *TMovie) InsertQuery() string {
 	return tMovieInsertSql
 }
 
-func (t *TMovie) UpdateAllQuery() string {
-	return tMovieUpdateAllSql
-}
-
-func (t *TMovie) UpdateByPkQuery() string {
-	return tMovieUpdateByPkSql
-}
-
 func (t *TMovie) CountQuery() string {
 	return tMovieModelCountSql
 }
@@ -104,6 +96,18 @@ func (t *TMovie) DeleteByPkQuery() string {
 
 func (t *TMovie) DeleteAllQuery() string {
 	return tMovieDeleteAllSql
+}
+
+func (t *TMovie) GetPkWhere() string {
+	return tMoviePkFieldsWhere
+}
+
+func (t *TMovie) GetAllFieldsWhere() string {
+	return tMovieAllFieldsWhere
+}
+
+func (t *TMovie) GetReturning() string {
+	return tMovieReturningFields
 }
 
 // language=postgresql
@@ -134,6 +138,31 @@ WHERE TRUE
 // language=postgresql
 var tMoviePkFieldsWhere = `
 WHERE id = :id
+`
+
+// language=postgresql
+var tMovieReturningFields = `
+RETURNING
+  id,
+  budget,
+  genre,
+  homepage,
+  keywords,
+  original_language,
+  original_title,
+  overview,
+  popularity,
+  production_companies,
+  production_countries,
+  release_date,
+  revenue,
+  runtime,
+  spoken_languages,
+  status,
+  tagline,
+  title,
+  vote_average,
+  vote_count;
 `
 
 // language=postgresql
@@ -181,125 +210,7 @@ VALUES (
   :title,
   :vote_average,
   :vote_count
-)
-RETURNING
-  id,
-  budget,
-  genre,
-  homepage,
-  keywords,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  production_companies,
-  production_countries,
-  release_date,
-  revenue,
-  runtime,
-  spoken_languages,
-  status,
-  tagline,
-  title,
-  vote_average,
-  vote_count;
-`
-
-// language=postgresql
-var tMovieUpdateByPkSql = `
-UPDATE public.t_movies
-SET
-  id = :id,
-  budget = :budget,
-  genre = :genre,
-  homepage = :homepage,
-  keywords = :keywords,
-  original_language = :original_language,
-  original_title = :original_title,
-  overview = :overview,
-  popularity = :popularity,
-  production_companies = :production_companies,
-  production_countries = :production_countries,
-  release_date = :release_date,
-  revenue = :revenue,
-  runtime = :runtime,
-  spoken_languages = :spoken_languages,
-  status = :status,
-  tagline = :tagline,
-  title = :title,
-  vote_average = :vote_average,
-  vote_count = :vote_count
-` + tMoviePkFieldsWhere + `
-RETURNING
-  id,
-  budget,
-  genre,
-  homepage,
-  keywords,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  production_companies,
-  production_countries,
-  release_date,
-  revenue,
-  runtime,
-  spoken_languages,
-  status,
-  tagline,
-  title,
-  vote_average,
-  vote_count;
-`
-
-// language=postgresql
-var tMovieUpdateAllSql = `
-UPDATE public.t_movies
-SET
-  id = :id,
-  budget = :budget,
-  genre = :genre,
-  homepage = :homepage,
-  keywords = :keywords,
-  original_language = :original_language,
-  original_title = :original_title,
-  overview = :overview,
-  popularity = :popularity,
-  production_companies = :production_companies,
-  production_countries = :production_countries,
-  release_date = :release_date,
-  revenue = :revenue,
-  runtime = :runtime,
-  spoken_languages = :spoken_languages,
-  status = :status,
-  tagline = :tagline,
-  title = :title,
-  vote_average = :vote_average,
-  vote_count = :vote_count
-` + tMovieAllFieldsWhere + `
-RETURNING
-  id,
-  budget,
-  genre,
-  homepage,
-  keywords,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  production_companies,
-  production_countries,
-  release_date,
-  revenue,
-  runtime,
-  spoken_languages,
-  status,
-  tagline,
-  title,
-  vote_average,
-  vote_count;
-`
+)` + tMovieReturningFields + ";"
 
 // language=postgresql
 var tMovieModelCountSql = `
@@ -367,30 +278,9 @@ LIMIT 1;`
 // language=postgresql
 var tMovieDeleteByPkSql = `
 DELETE FROM public.t_movies
-WHERE id = :id;
-`
+` + tMoviePkFieldsWhere + ";"
 
 // language=postgresql
 var tMovieDeleteAllSql = `
 DELETE FROM public.t_movies
-WHERE id = :id
-  AND budget = :budget
-  AND genre = :genre
-  AND homepage = :homepage
-  AND keywords = :keywords
-  AND original_language = :original_language
-  AND original_title = :original_title
-  AND overview = :overview
-  AND popularity = :popularity
-  AND production_companies = :production_companies
-  AND production_countries = :production_countries
-  AND release_date = :release_date
-  AND revenue = :revenue
-  AND runtime = :runtime
-  AND spoken_languages = :spoken_languages
-  AND status = :status
-  AND tagline = :tagline
-  AND title = :title
-  AND vote_average = :vote_average
-  AND vote_count = :vote_count;
-`
+` + tMovieAllFieldsWhere + ";"

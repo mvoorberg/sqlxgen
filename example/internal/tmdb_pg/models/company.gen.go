@@ -38,14 +38,6 @@ func (c *Company) InsertQuery() string {
 	return companyInsertSql
 }
 
-func (c *Company) UpdateAllQuery() string {
-	return companyUpdateAllSql
-}
-
-func (c *Company) UpdateByPkQuery() string {
-	return companyUpdateByPkSql
-}
-
 func (c *Company) CountQuery() string {
 	return companyModelCountSql
 }
@@ -70,6 +62,18 @@ func (c *Company) DeleteAllQuery() string {
 	return companyDeleteAllSql
 }
 
+func (c *Company) GetPkWhere() string {
+	return companyPkFieldsWhere
+}
+
+func (c *Company) GetAllFieldsWhere() string {
+	return companyAllFieldsWhere
+}
+
+func (c *Company) GetReturning() string {
+	return companyReturningFields
+}
+
 // language=postgresql
 var companyAllFieldsWhere = `
 WHERE TRUE
@@ -84,6 +88,14 @@ WHERE id = :id
 `
 
 // language=postgresql
+var companyReturningFields = `
+RETURNING
+  id,
+  name,
+  name_search;
+`
+
+// language=postgresql
 var companyInsertSql = `
 INSERT INTO public.companies(
   id,
@@ -92,38 +104,7 @@ INSERT INTO public.companies(
 VALUES (
   :id,
   :name
-)
-RETURNING
-  id,
-  name,
-  name_search;
-`
-
-// language=postgresql
-var companyUpdateByPkSql = `
-UPDATE public.companies
-SET
-  id = :id,
-  name = :name
-` + companyPkFieldsWhere + `
-RETURNING
-  id,
-  name,
-  name_search;
-`
-
-// language=postgresql
-var companyUpdateAllSql = `
-UPDATE public.companies
-SET
-  id = :id,
-  name = :name
-` + companyAllFieldsWhere + `
-RETURNING
-  id,
-  name,
-  name_search;
-`
+)` + companyReturningFields + ";"
 
 // language=postgresql
 var companyModelCountSql = `
@@ -157,13 +138,9 @@ LIMIT 1;`
 // language=postgresql
 var companyDeleteByPkSql = `
 DELETE FROM public.companies
-WHERE id = :id;
-`
+` + companyPkFieldsWhere + ";"
 
 // language=postgresql
 var companyDeleteAllSql = `
 DELETE FROM public.companies
-WHERE id = :id
-  AND name = :name
-  AND name_search = :name_search;
-`
+` + companyAllFieldsWhere + ";"
