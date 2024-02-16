@@ -124,7 +124,7 @@ func updateSingle[T model[P], P any](db Database, updateSql string, instance T) 
 	return updated, nil
 }
 
-func UpdateMany[T model[P], P any](db Database, instances ...T) ([]T, error) {
+func Update[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	updates := make([]T, 0)
 
 	// TODO: put this in a transaction and fail them all together
@@ -366,6 +366,9 @@ func DeleteOne[T model[P], P any](db Database, instance T) error {
 func DeleteAll[T model[P], P any](db Database, instance T) (*int64, error) {
 
 	result, err := db.NamedExec(instance.DeleteAllQuery(), instance)
+	if err != nil {
+		return nil, err
+	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
@@ -602,10 +605,6 @@ var SET_NULL = struct {
 	JSON_ARRAY:  "", // lib.JsonArray{},
 	JSON_OBJECT: "", // lib.JsonObject{},
 }
-
-var NULL_STRING string = "NULL"
-
-// var nullPtr *string = &NULL_STRING
 
 type UpdateObjectMetadata struct {
 	DbName        string
