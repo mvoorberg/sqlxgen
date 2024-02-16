@@ -37,14 +37,6 @@ func (m *MoviesLanguage) InsertQuery() string {
 	return moviesLanguageInsertSql
 }
 
-func (m *MoviesLanguage) UpdateAllQuery() string {
-	return moviesLanguageUpdateAllSql
-}
-
-func (m *MoviesLanguage) UpdateByPkQuery() string {
-	return moviesLanguageUpdateByPkSql
-}
-
 func (m *MoviesLanguage) CountQuery() string {
 	return moviesLanguageModelCountSql
 }
@@ -69,6 +61,18 @@ func (m *MoviesLanguage) DeleteAllQuery() string {
 	return moviesLanguageDeleteAllSql
 }
 
+func (m *MoviesLanguage) GetPkWhere() string {
+	return moviesLanguagePkFieldsWhere
+}
+
+func (m *MoviesLanguage) GetAllFieldsWhere() string {
+	return moviesLanguageAllFieldsWhere
+}
+
+func (m *MoviesLanguage) GetReturning() string {
+	return moviesLanguageReturningFields
+}
+
 // language=postgresql
 var moviesLanguageAllFieldsWhere = `
 WHERE TRUE
@@ -83,6 +87,13 @@ WHERE movie_id = :movie_id
 `
 
 // language=postgresql
+var moviesLanguageReturningFields = `
+RETURNING
+  movie_id,
+  language_id;
+`
+
+// language=postgresql
 var moviesLanguageInsertSql = `
 INSERT INTO public.movies_languages(
   movie_id,
@@ -91,35 +102,7 @@ INSERT INTO public.movies_languages(
 VALUES (
   :movie_id,
   :language_id
-)
-RETURNING
-  movie_id,
-  language_id;
-`
-
-// language=postgresql
-var moviesLanguageUpdateByPkSql = `
-UPDATE public.movies_languages
-SET
-  movie_id = :movie_id,
-  language_id = :language_id
-` + moviesLanguagePkFieldsWhere + `
-RETURNING
-  movie_id,
-  language_id;
-`
-
-// language=postgresql
-var moviesLanguageUpdateAllSql = `
-UPDATE public.movies_languages
-SET
-  movie_id = :movie_id,
-  language_id = :language_id
-` + moviesLanguageAllFieldsWhere + `
-RETURNING
-  movie_id,
-  language_id;
-`
+)` + moviesLanguageReturningFields + ";"
 
 // language=postgresql
 var moviesLanguageModelCountSql = `

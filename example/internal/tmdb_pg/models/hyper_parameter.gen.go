@@ -41,14 +41,6 @@ func (h *HyperParameter) InsertQuery() string {
 	return hyperParameterInsertSql
 }
 
-func (h *HyperParameter) UpdateAllQuery() string {
-	return hyperParameterUpdateAllSql
-}
-
-func (h *HyperParameter) UpdateByPkQuery() string {
-	return hyperParameterUpdateByPkSql
-}
-
 func (h *HyperParameter) CountQuery() string {
 	return hyperParameterModelCountSql
 }
@@ -73,6 +65,18 @@ func (h *HyperParameter) DeleteAllQuery() string {
 	return hyperParameterDeleteAllSql
 }
 
+func (h *HyperParameter) GetPkWhere() string {
+	return hyperParameterPkFieldsWhere
+}
+
+func (h *HyperParameter) GetAllFieldsWhere() string {
+	return hyperParameterAllFieldsWhere
+}
+
+func (h *HyperParameter) GetReturning() string {
+	return hyperParameterReturningFields
+}
+
 // language=postgresql
 var hyperParameterAllFieldsWhere = `
 WHERE TRUE
@@ -89,6 +93,15 @@ WHERE type = :type
 `
 
 // language=postgresql
+var hyperParameterReturningFields = `
+RETURNING
+  type,
+  value,
+  friendly_name,
+  friendly_name_search;
+`
+
+// language=postgresql
 var hyperParameterInsertSql = `
 INSERT INTO public.hyper_parameters(
   type,
@@ -99,43 +112,7 @@ VALUES (
   :type,
   :value,
   :friendly_name
-)
-RETURNING
-  type,
-  value,
-  friendly_name,
-  friendly_name_search;
-`
-
-// language=postgresql
-var hyperParameterUpdateByPkSql = `
-UPDATE public.hyper_parameters
-SET
-  type = :type,
-  value = :value,
-  friendly_name = :friendly_name
-` + hyperParameterPkFieldsWhere + `
-RETURNING
-  type,
-  value,
-  friendly_name,
-  friendly_name_search;
-`
-
-// language=postgresql
-var hyperParameterUpdateAllSql = `
-UPDATE public.hyper_parameters
-SET
-  type = :type,
-  value = :value,
-  friendly_name = :friendly_name
-` + hyperParameterAllFieldsWhere + `
-RETURNING
-  type,
-  value,
-  friendly_name,
-  friendly_name_search;
-`
+)` + hyperParameterReturningFields + ";"
 
 // language=postgresql
 var hyperParameterModelCountSql = `

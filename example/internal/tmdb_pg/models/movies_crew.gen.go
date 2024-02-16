@@ -41,14 +41,6 @@ func (m *MoviesCrew) InsertQuery() string {
 	return moviesCrewInsertSql
 }
 
-func (m *MoviesCrew) UpdateAllQuery() string {
-	return moviesCrewUpdateAllSql
-}
-
-func (m *MoviesCrew) UpdateByPkQuery() string {
-	return moviesCrewUpdateByPkSql
-}
-
 func (m *MoviesCrew) CountQuery() string {
 	return moviesCrewModelCountSql
 }
@@ -73,6 +65,18 @@ func (m *MoviesCrew) DeleteAllQuery() string {
 	return moviesCrewDeleteAllSql
 }
 
+func (m *MoviesCrew) GetPkWhere() string {
+	return moviesCrewPkFieldsWhere
+}
+
+func (m *MoviesCrew) GetAllFieldsWhere() string {
+	return moviesCrewAllFieldsWhere
+}
+
+func (m *MoviesCrew) GetReturning() string {
+	return moviesCrewReturningFields
+}
+
 // language=postgresql
 var moviesCrewAllFieldsWhere = `
 WHERE TRUE
@@ -89,6 +93,15 @@ WHERE movie_id = :movie_id
 `
 
 // language=postgresql
+var moviesCrewReturningFields = `
+RETURNING
+  movie_id,
+  crew_id,
+  department_id,
+  job_id;
+`
+
+// language=postgresql
 var moviesCrewInsertSql = `
 INSERT INTO public.movies_crew(
   movie_id,
@@ -101,45 +114,7 @@ VALUES (
   :crew_id,
   :department_id,
   :job_id
-)
-RETURNING
-  movie_id,
-  crew_id,
-  department_id,
-  job_id;
-`
-
-// language=postgresql
-var moviesCrewUpdateByPkSql = `
-UPDATE public.movies_crew
-SET
-  movie_id = :movie_id,
-  crew_id = :crew_id,
-  department_id = :department_id,
-  job_id = :job_id
-` + moviesCrewPkFieldsWhere + `
-RETURNING
-  movie_id,
-  crew_id,
-  department_id,
-  job_id;
-`
-
-// language=postgresql
-var moviesCrewUpdateAllSql = `
-UPDATE public.movies_crew
-SET
-  movie_id = :movie_id,
-  crew_id = :crew_id,
-  department_id = :department_id,
-  job_id = :job_id
-` + moviesCrewAllFieldsWhere + `
-RETURNING
-  movie_id,
-  crew_id,
-  department_id,
-  job_id;
-`
+)` + moviesCrewReturningFields + ";"
 
 // language=postgresql
 var moviesCrewModelCountSql = `

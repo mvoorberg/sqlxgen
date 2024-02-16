@@ -55,14 +55,6 @@ func ({{ $receiverName }} *{{ .PascalName }}) InsertQuery() string {
   return {{ .CamelName }}InsertSql
 }
 
-func ({{ $receiverName }} *{{ .PascalName }}) UpdateAllQuery() string {
-  return {{ .CamelName }}UpdateAllSql
-}
-
-func ({{ $receiverName }} *{{ .PascalName }}) UpdateByPkQuery() string {
-  return {{ .CamelName }}UpdateByPkSql
-}
-
 func ({{ $receiverName }} *{{ .PascalName }}) CountQuery() string {
   return {{ .CamelName }}ModelCountSql
 }
@@ -87,6 +79,18 @@ func ({{ $receiverName }} *{{ .PascalName }}) DeleteAllQuery() string {
   return {{ .CamelName }}DeleteAllSql
 }
 
+func ({{ $receiverName }} *{{ .PascalName }}) GetPkWhere() string {
+  return {{ .CamelName }}PkFieldsWhere
+}
+
+func ({{ $receiverName }} *{{ .PascalName }}) GetAllFieldsWhere() string {
+  return {{ .CamelName }}AllFieldsWhere
+}
+
+func ({{ $receiverName }} *{{ .PascalName }}) GetReturning() string {
+  return {{ .CamelName }}ReturningFields
+}
+
 // language=postgresql
 var {{ .CamelName }}AllFieldsWhere = `
 WHERE TRUE
@@ -107,6 +111,14 @@ var {{ .CamelName }}PkFieldsWhere = `
 `
 
 // language=postgresql
+var {{ .CamelName }}ReturningFields = `
+RETURNING
+{{- range $i, $f := $selectFields }}
+  {{ $f.Column.ColumnName }}{{ if not (isLast $i $selectFields) }},{{ end }}
+{{- end }};
+`
+
+// language=postgresql
 var {{ .CamelName }}InsertSql = `
 INSERT INTO {{ .Table.SchemaName }}.{{ .Table.TableName }}(
 {{- range $i, $f := $insertFields }}
@@ -121,40 +133,7 @@ VALUES (
   :{{ .Column.ColumnName }}{{ if not (isLast $i $insertFields) }},{{ end }}
   {{- end }}
 {{- end }}
-)
-RETURNING
-{{- range $i, $f := $selectFields }}
-  {{ $f.Column.ColumnName }}{{ if not (isLast $i $selectFields) }},{{ end }}
-{{- end }};
-`
-
-// language=postgresql
-var {{ .CamelName }}UpdateByPkSql = `
-UPDATE {{ .Table.SchemaName }}.{{ .Table.TableName }}
-SET
-{{- range $i, $f := $updateFields }}
-  {{ $f.Column.ColumnName }} = :{{ $f.Column.ColumnName }}{{ if not (isLast $i $updateFields) }},{{ end }}
-{{- end }}
-` + {{ .CamelName }}PkFieldsWhere + `
-RETURNING
-{{- range $i, $f := $selectFields }}
-  {{ $f.Column.ColumnName }}{{ if not (isLast $i $selectFields) }},{{ end }}
-{{- end }};
-`
-
-// language=postgresql
-var {{ .CamelName }}UpdateAllSql = `
-UPDATE {{ .Table.SchemaName }}.{{ .Table.TableName }}
-SET
-{{- range $i, $f := $updateFields }}
-  {{ $f.Column.ColumnName }} = :{{ $f.Column.ColumnName }}{{ if not (isLast $i $updateFields) }},{{ end }}
-{{- end }}
-` + {{ .CamelName }}AllFieldsWhere + `
-RETURNING
-{{- range $i, $f := $selectFields }}
-  {{ $f.Column.ColumnName }}{{ if not (isLast $i $selectFields) }},{{ end }}
-{{- end }};
-`
+)` + {{ .CamelName }}ReturningFields + ";"
 
 // language=postgresql
 var {{ .CamelName }}ModelCountSql = `

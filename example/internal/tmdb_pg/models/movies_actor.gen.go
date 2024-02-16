@@ -43,14 +43,6 @@ func (m *MoviesActor) InsertQuery() string {
 	return moviesActorInsertSql
 }
 
-func (m *MoviesActor) UpdateAllQuery() string {
-	return moviesActorUpdateAllSql
-}
-
-func (m *MoviesActor) UpdateByPkQuery() string {
-	return moviesActorUpdateByPkSql
-}
-
 func (m *MoviesActor) CountQuery() string {
 	return moviesActorModelCountSql
 }
@@ -75,6 +67,18 @@ func (m *MoviesActor) DeleteAllQuery() string {
 	return moviesActorDeleteAllSql
 }
 
+func (m *MoviesActor) GetPkWhere() string {
+	return moviesActorPkFieldsWhere
+}
+
+func (m *MoviesActor) GetAllFieldsWhere() string {
+	return moviesActorAllFieldsWhere
+}
+
+func (m *MoviesActor) GetReturning() string {
+	return moviesActorReturningFields
+}
+
 // language=postgresql
 var moviesActorAllFieldsWhere = `
 WHERE TRUE
@@ -92,6 +96,16 @@ WHERE movie_id = :movie_id
 `
 
 // language=postgresql
+var moviesActorReturningFields = `
+RETURNING
+  movie_id,
+  actor_id,
+  cast_order,
+  character,
+  character_search;
+`
+
+// language=postgresql
 var moviesActorInsertSql = `
 INSERT INTO public.movies_actors(
   movie_id,
@@ -104,48 +118,7 @@ VALUES (
   :actor_id,
   :cast_order,
   :character
-)
-RETURNING
-  movie_id,
-  actor_id,
-  cast_order,
-  character,
-  character_search;
-`
-
-// language=postgresql
-var moviesActorUpdateByPkSql = `
-UPDATE public.movies_actors
-SET
-  movie_id = :movie_id,
-  actor_id = :actor_id,
-  cast_order = :cast_order,
-  character = :character
-` + moviesActorPkFieldsWhere + `
-RETURNING
-  movie_id,
-  actor_id,
-  cast_order,
-  character,
-  character_search;
-`
-
-// language=postgresql
-var moviesActorUpdateAllSql = `
-UPDATE public.movies_actors
-SET
-  movie_id = :movie_id,
-  actor_id = :actor_id,
-  cast_order = :cast_order,
-  character = :character
-` + moviesActorAllFieldsWhere + `
-RETURNING
-  movie_id,
-  actor_id,
-  cast_order,
-  character,
-  character_search;
-`
+)` + moviesActorReturningFields + ";"
 
 // language=postgresql
 var moviesActorModelCountSql = `

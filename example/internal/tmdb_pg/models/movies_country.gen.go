@@ -37,14 +37,6 @@ func (m *MoviesCountry) InsertQuery() string {
 	return moviesCountryInsertSql
 }
 
-func (m *MoviesCountry) UpdateAllQuery() string {
-	return moviesCountryUpdateAllSql
-}
-
-func (m *MoviesCountry) UpdateByPkQuery() string {
-	return moviesCountryUpdateByPkSql
-}
-
 func (m *MoviesCountry) CountQuery() string {
 	return moviesCountryModelCountSql
 }
@@ -69,6 +61,18 @@ func (m *MoviesCountry) DeleteAllQuery() string {
 	return moviesCountryDeleteAllSql
 }
 
+func (m *MoviesCountry) GetPkWhere() string {
+	return moviesCountryPkFieldsWhere
+}
+
+func (m *MoviesCountry) GetAllFieldsWhere() string {
+	return moviesCountryAllFieldsWhere
+}
+
+func (m *MoviesCountry) GetReturning() string {
+	return moviesCountryReturningFields
+}
+
 // language=postgresql
 var moviesCountryAllFieldsWhere = `
 WHERE TRUE
@@ -83,6 +87,13 @@ WHERE movie_id = :movie_id
 `
 
 // language=postgresql
+var moviesCountryReturningFields = `
+RETURNING
+  movie_id,
+  country_id;
+`
+
+// language=postgresql
 var moviesCountryInsertSql = `
 INSERT INTO public.movies_countries(
   movie_id,
@@ -91,35 +102,7 @@ INSERT INTO public.movies_countries(
 VALUES (
   :movie_id,
   :country_id
-)
-RETURNING
-  movie_id,
-  country_id;
-`
-
-// language=postgresql
-var moviesCountryUpdateByPkSql = `
-UPDATE public.movies_countries
-SET
-  movie_id = :movie_id,
-  country_id = :country_id
-` + moviesCountryPkFieldsWhere + `
-RETURNING
-  movie_id,
-  country_id;
-`
-
-// language=postgresql
-var moviesCountryUpdateAllSql = `
-UPDATE public.movies_countries
-SET
-  movie_id = :movie_id,
-  country_id = :country_id
-` + moviesCountryAllFieldsWhere + `
-RETURNING
-  movie_id,
-  country_id;
-`
+)` + moviesCountryReturningFields + ";"
 
 // language=postgresql
 var moviesCountryModelCountSql = `

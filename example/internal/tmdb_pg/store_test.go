@@ -25,17 +25,17 @@ func TestMoviesFind(t *testing.T) {
 		}
 
 		var id int32 = 24
+		var title string = "Kill Bill: Vol. 1"
 		m := models.Movie{
 			Id: &id,
 		}
 
 		// Count
-		var countResult int64 = 1
 		countMovies, err := store.Count[*models.Movie](db, &m)
 		if err != nil {
 			t.Errorf("unable : %v", err)
 		}
-		assert.Equal(t, countResult, *countMovies)
+		assert.Equal(t, countMovies, 1)
 
 		// Find by PK
 		killBillVol1, err := store.FindByPk[*models.Movie](db, &m)
@@ -46,7 +46,6 @@ func TestMoviesFind(t *testing.T) {
 		assert.Equal(t, id, *killBillVol1.Id)
 
 		// Find One
-		var title string = "Kill Bill: Vol. 1"
 		m2 := models.Movie{
 			Title: &title,
 		}
@@ -79,5 +78,29 @@ func TestMoviesFind(t *testing.T) {
 
 		println("store find done")
 
+		kbLang := "en"
+		kb := models.Movie{}
+		kb.Id = &id
+		kb.Title = &title
+		kb.OriginalLanguage = &kbLang
+
+		// Update will only update the fields that are set!
+		result, err := store.UpdateByPk[*models.Movie](db, &kb)
+		if err != nil {
+			t.Errorf("unable : %v", err)
+		}
+		assert.Equal(t, 24, int(*result.Id))
+
+		// Update Many
+		someMovies := []*models.Movie{}
+		someMovies = append(someMovies, &kb)
+		someMovies = append(someMovies, &kb)
+
+		someResults, err := store.UpdateMany[*models.Movie](db, someMovies...)
+		if err != nil {
+			t.Errorf("unable : %v", err)
+		}
+		assert.Equal(t, 24, int(*someResults[0].Id))
 	})
+
 }

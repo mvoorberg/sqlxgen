@@ -8,7 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -68,7 +70,40 @@ func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 
 func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
 
-	updateSql := instance.UpdateByPkQuery()
+	tableName := instance.TableName()
+	pkCols := instance.PrimaryKey()
+	meta := getFieldMetaForUpdate(instance)
+
+	updateSql := fmt.Sprintf("UPDATE %s SET ", tableName)
+	setCols := 0
+	for _, v := range meta {
+
+		isPk := false // Don't update the PK cols!
+		for _, pk := range pkCols {
+			if v.DbName == pk {
+				isPk = true
+				break
+			}
+		}
+		if !isPk && v.ShouldUpdate {
+			if setCols != 0 {
+				updateSql += ","
+			}
+			updateSql += fmt.Sprintf("\n  %s = :%s", v.DbName, v.DbName)
+			setCols++
+		}
+	}
+	if setCols == 0 {
+		return nil, fmt.Errorf("no fields to update on %s", GetTypeName(instance))
+	}
+	updateSql += instance.GetPkWhere()
+	updateSql += instance.GetReturning()
+
+	return updateSingle[T, P](db, updateSql, instance)
+}
+
+func updateSingle[T model[P], P any](db Database, updateSql string, instance T) (T, error) {
+
 	rows, err := db.NamedQuery(updateSql, instance)
 	if err != nil {
 		return nil, err
@@ -89,50 +124,15 @@ func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
 	return updated, nil
 }
 
-func UpdateOne[T model[P], P any](db Database, instance T) (T, error) {
-
-	count, err := Count[T](db, instance)
-	if err != nil {
-		return nil, err
-	}
-	if count != 1 {
-		return nil, fmt.Errorf("update-one %s would have matched %d rows", GetTypeName(instance), count)
-	}
-
-	updates, err := UpdateMany[T](db, instance)
-
-	if err != nil {
-		return nil, err
-	}
-	return updates[0], nil
-}
-
 func UpdateMany[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	updates := make([]T, 0)
 
+	// TODO: put this in a transaction and fail them all together
 	for _, instance := range instances {
-		updateSql := instance.UpdateAllQuery()
-		rows, err := db.NamedQuery(updateSql, instance)
-
+		updated, err := UpdateByPk[T](db, instance)
 		if err != nil {
 			return nil, err
 		}
-
-		hasNext := rows.Next()
-
-		if !hasNext {
-			return nil, fmt.Errorf("unable to update %s", GetTypeName(instance))
-		}
-
-		updated := new(P)
-
-		err = rows.StructScan(updated)
-		if err != nil {
-			return nil, err
-		}
-
-		rows.Close()
-
 		updates = append(updates, updated)
 	}
 
@@ -382,8 +382,6 @@ type model[P any] interface {
 	PrimaryKey() []string
 
 	InsertQuery() string
-	UpdateAllQuery() string
-	UpdateByPkQuery() string
 
 	CountQuery() string
 	FindFirstQuery() string
@@ -392,6 +390,50 @@ type model[P any] interface {
 
 	DeleteByPkQuery() string
 	DeleteAllQuery() string
+
+	GetReturning() string
+	GetPkWhere() string
+	GetAllFieldsWhere() string
+}
+
+func Query[R result[pR], Q queryable[pQ], pR, pQ any](db Database, args Q) ([]R, error) {
+	re, err := regexp.Compile(`-{2,}\s*([\w\W\s\S]*?)(\n|\z)`)
+
+	if err != nil {
+		return nil, err
+	}
+
+	query := re.ReplaceAllString(args.Sql(), "$2")
+	rows, err := db.NamedQuery(query, args)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	result := make([]R, 0)
+
+	for rows.Next() {
+		instance := new(pR)
+		err = rows.StructScan(instance)
+
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, instance)
+	}
+	return result, nil
+}
+
+type queryable[P any] interface {
+	*P
+
+	Sql() string
+}
+
+type result[P any] interface {
+	*P
 }
 
 // supplementary types
@@ -526,6 +568,7 @@ func BulkInsert[T model[P], P any](db *sqlx.DB, ctx context.Context, itemsToSave
 
 	return items, nil
 }
+
 // *************************
 // starting partial Update!
 // *************************
@@ -572,7 +615,7 @@ type UpdateObjectMetadata struct {
 	ShouldUpdate  bool
 }
 
-func rUpdateFields(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
+func rUpdateMeta(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
 
 	if rv.Kind() != reflect.Struct {
 		return
@@ -581,8 +624,8 @@ func rUpdateFields(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
 	fields = make(map[string]UpdateObjectMetadata)
 
 	for i := 0; i < rv.NumField(); i++ {
-		fieldName := rv.Type().Field(i).Name
 
+		fieldName := rv.Type().Field(i).Name
 		f := reflect.Indirect(rv).FieldByName(fieldName)
 
 		if f.Kind() != reflect.Struct {
@@ -613,26 +656,22 @@ func rUpdateFields(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
 		f := rv.Field(i)
 
 		// recurse each field to see if that field is also an embedded struct
-		newfields := rUpdateFields(f)
+		newfields := rUpdateMeta(f)
 
 		// merge the new fields into the fields map
 		for k, v := range newfields {
 			fields[k] = v
 		}
 	}
-
 	return fields
 }
 
-func getFieldsForUpdate(v any) int {
-	// declare a map to hold the fields that have values
-	// fields := make(map[string]UpdateObjectMetadata)
+func getFieldMetaForUpdate[T model[P], P any](instance T) (fields map[string]UpdateObjectMetadata) {
 
-	fields := rUpdateFields(reflect.ValueOf(v))
+	instancePtr := *instance
+	fields = rUpdateMeta(reflect.ValueOf(instancePtr))
 
-	// print the map
-	fmt.Printf("Done!: %v", fields)
-	return 0
+	return fields
 }
 
 // *************************

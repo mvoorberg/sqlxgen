@@ -37,14 +37,6 @@ func (m *MoviesGenre) InsertQuery() string {
 	return moviesGenreInsertSql
 }
 
-func (m *MoviesGenre) UpdateAllQuery() string {
-	return moviesGenreUpdateAllSql
-}
-
-func (m *MoviesGenre) UpdateByPkQuery() string {
-	return moviesGenreUpdateByPkSql
-}
-
 func (m *MoviesGenre) CountQuery() string {
 	return moviesGenreModelCountSql
 }
@@ -69,6 +61,18 @@ func (m *MoviesGenre) DeleteAllQuery() string {
 	return moviesGenreDeleteAllSql
 }
 
+func (m *MoviesGenre) GetPkWhere() string {
+	return moviesGenrePkFieldsWhere
+}
+
+func (m *MoviesGenre) GetAllFieldsWhere() string {
+	return moviesGenreAllFieldsWhere
+}
+
+func (m *MoviesGenre) GetReturning() string {
+	return moviesGenreReturningFields
+}
+
 // language=postgresql
 var moviesGenreAllFieldsWhere = `
 WHERE TRUE
@@ -83,6 +87,13 @@ WHERE movie_id = :movie_id
 `
 
 // language=postgresql
+var moviesGenreReturningFields = `
+RETURNING
+  movie_id,
+  genre_id;
+`
+
+// language=postgresql
 var moviesGenreInsertSql = `
 INSERT INTO public.movies_genres(
   movie_id,
@@ -91,35 +102,7 @@ INSERT INTO public.movies_genres(
 VALUES (
   :movie_id,
   :genre_id
-)
-RETURNING
-  movie_id,
-  genre_id;
-`
-
-// language=postgresql
-var moviesGenreUpdateByPkSql = `
-UPDATE public.movies_genres
-SET
-  movie_id = :movie_id,
-  genre_id = :genre_id
-` + moviesGenrePkFieldsWhere + `
-RETURNING
-  movie_id,
-  genre_id;
-`
-
-// language=postgresql
-var moviesGenreUpdateAllSql = `
-UPDATE public.movies_genres
-SET
-  movie_id = :movie_id,
-  genre_id = :genre_id
-` + moviesGenreAllFieldsWhere + `
-RETURNING
-  movie_id,
-  genre_id;
-`
+)` + moviesGenreReturningFields + ";"
 
 // language=postgresql
 var moviesGenreModelCountSql = `
