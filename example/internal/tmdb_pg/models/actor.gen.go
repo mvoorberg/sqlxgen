@@ -84,15 +84,14 @@ WHERE TRUE
 
 // language=postgresql
 var actorPkFieldsWhere = `
-WHERE id = :id
+ WHERE id = :id
 `
 
 // language=postgresql
 var actorReturningFields = `
-RETURNING
-  id,
-  name,
-  name_search;
+ RETURNING id,
+ name,
+ name_search;
 `
 
 // language=postgresql

@@ -91,12 +91,29 @@ func TestMoviesFind(t *testing.T) {
 		}
 		assert.Equal(t, 24, int(*result.Id))
 
+		badAkCols := []string{"dummy", "original_language"}
+		_, err = store.UpdateByAk[*models.Movie](db, &kb, badAkCols)
+		assert.ErrorContains(t, err, "alternate key dummy not found in Movie")
+
+		// Update will only update the fields that are set!
+		akCols := []string{"id", "original_language"}
+		akResult, err := store.UpdateByAk[*models.Movie](db, &kb, akCols)
+		if err != nil {
+			t.Errorf("unable : %v", err)
+		}
+		assert.Equal(t, 24, int(*akResult.Id))
+
+		// Update by AK will only update one record!
+		akCols2 := []string{"original_language"}
+		_, err = store.UpdateByAk[*models.Movie](db, &kb, akCols2)
+		assert.ErrorContains(t, err, "update-by-AK Movie would have matched")
+
 		// Update Many
 		someMovies := []*models.Movie{}
 		someMovies = append(someMovies, &kb)
 		someMovies = append(someMovies, &kb)
 
-		someResults, err := store.UpdateMany[*models.Movie](db, someMovies...)
+		someResults, err := store.Update[*models.Movie](db, someMovies...)
 		if err != nil {
 			t.Errorf("unable : %v", err)
 		}

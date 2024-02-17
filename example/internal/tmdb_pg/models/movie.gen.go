@@ -158,39 +158,38 @@ WHERE TRUE
 
 // language=postgresql
 var moviePkFieldsWhere = `
-WHERE id = :id
+ WHERE id = :id
 `
 
 // language=postgresql
 var movieReturningFields = `
-RETURNING
-  id,
-  budget,
-  client_id,
-  completed_coordinates,
-  data_synced_at,
-  distance_to_place,
-  homepage,
-  is_completed,
-  keywords,
-  keywords_search,
-  location_accuracy,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  release_date,
-  revenue,
-  runtime,
-  search_vector,
-  status,
-  summary,
-  synopsis,
-  tagline,
-  title,
-  title_search,
-  vote_average,
-  vote_count;
+ RETURNING id,
+ budget,
+ client_id,
+ completed_coordinates,
+ data_synced_at,
+ distance_to_place,
+ homepage,
+ is_completed,
+ keywords,
+ keywords_search,
+ location_accuracy,
+ original_language,
+ original_title,
+ overview,
+ popularity,
+ release_date,
+ revenue,
+ runtime,
+ search_vector,
+ status,
+ summary,
+ synopsis,
+ tagline,
+ title,
+ title_search,
+ vote_average,
+ vote_count;
 `
 
 // language=postgresql

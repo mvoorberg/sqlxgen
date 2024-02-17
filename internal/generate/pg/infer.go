@@ -69,6 +69,12 @@ func fromSingle(storePackageDir string, column introspect.Column) (types.GoType,
 
 		return goType, nil
 
+	case "hstore":
+		goType.GoType = "*pgtype.Hstore"
+		goType.Import = "github.com/jackc/pgtype"
+
+		return goType, nil
+
 	case "numeric", "pg_catalog.numeric", "money", "pg_catalog.money":
 		// Since the Go standard library does not have a decimal type, lib/pq
 		// returns numerics as strings.

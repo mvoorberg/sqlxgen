@@ -17,6 +17,7 @@ import (
 
 // orm
 
+// Get the type name of a model.
 func GetTypeName[T any](instance T) string {
 	t := reflect.TypeOf(instance)
 	typeName := t.Name()
@@ -26,6 +27,7 @@ func GetTypeName[T any](instance T) string {
 	return typeName
 }
 
+// Insert a single record and reselect it.
 func InsertOne[T model[P], P any](db Database, instance T) (T, error) {
 
 	inserted, err := Insert[T](db, instance)
@@ -36,6 +38,7 @@ func InsertOne[T model[P], P any](db Database, instance T) (T, error) {
 	return inserted[0], nil
 }
 
+// Insert a slice of records, one at a time. Return the inserted records.
 func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	inserts := make([]T, 0)
 
@@ -68,24 +71,91 @@ func Insert[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	return inserts, nil
 }
 
+// Update a single record by Primary Key.
 func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
 
-	tableName := instance.TableName()
 	pkCols := instance.PrimaryKey()
+	if len(pkCols) == 0 {
+		return nil, fmt.Errorf("primary key not defined for %s", GetTypeName(instance))
+	}
+
+	updateSql, err := getUpdateSql(instance, pkCols)
+	if err != nil {
+		return nil, err
+	}
+
+	*updateSql += instance.GetPkWhere()
+	*updateSql += instance.GetReturning()
+
+	return updateSingle[T, P](db, *updateSql, instance)
+}
+
+// Update a single record by an Alternate Key.
+func UpdateByAk[T model[P], P any](db Database, instance T, altKeys []string) (T, error) {
+
+	updateSql, err := getUpdateSql(instance, altKeys)
+	if err != nil {
+		return nil, err
+	}
+
+	altWhereSql, err := getAltKeyWhere(instance, altKeys)
+	if err != nil {
+		return nil, err
+	}
+	*updateSql += *altWhereSql
+	*updateSql += instance.GetReturning()
+
+	countSql := `SELECT COUNT(*) FROM ` + instance.TableName() + *altWhereSql
+	result, err := CountSql(db, countSql, instance)
+	if err != nil {
+		return nil, err
+	}
+	if result != 1 {
+		return nil, fmt.Errorf("update-by-AK %s would have matched %d rows", GetTypeName(instance), result)
+	}
+
+	return updateSingle[T, P](db, *updateSql, instance)
+}
+
+func getAltKeyWhere[T model[P], P any](model T, altKeys []string) (*string, error) {
+
+	fields := getDbFieldMeta(model)
+
+	where := " WHERE "
+	for i, k := range altKeys {
+		_, ok := fields[k]
+		if !ok {
+			return nil, fmt.Errorf("alternate key %s not found in %s", k, GetTypeName(model))
+		}
+		if i > 0 {
+			where += " AND "
+		}
+		where += fmt.Sprintf("%s = :%s", k, k)
+	}
+	return &where, nil
+}
+
+func getUpdateSql[T model[P], P any](instance T, keyCols []string) (*string, error) {
+
+	if len(keyCols) == 0 {
+		return nil, fmt.Errorf("key columns not defined for %s", GetTypeName(instance))
+	}
+
+	tableName := instance.TableName()
 	meta := getFieldMetaForUpdate(instance)
 
 	updateSql := fmt.Sprintf("UPDATE %s SET ", tableName)
 	setCols := 0
 	for _, v := range meta {
 
-		isPk := false // Don't update the PK cols!
-		for _, pk := range pkCols {
-			if v.DbName == pk {
-				isPk = true
+		isKey := false // Don't update the Primary/Alternate Key cols!
+		for _, k := range keyCols {
+			if v.DbName == k {
+				isKey = true
 				break
 			}
 		}
-		if !isPk && v.ShouldUpdate {
+		if !isKey && v.FieldHasValue {
 			if setCols != 0 {
 				updateSql += ","
 			}
@@ -96,10 +166,7 @@ func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
 	if setCols == 0 {
 		return nil, fmt.Errorf("no fields to update on %s", GetTypeName(instance))
 	}
-	updateSql += instance.GetPkWhere()
-	updateSql += instance.GetReturning()
-
-	return updateSingle[T, P](db, updateSql, instance)
+	return &updateSql, nil
 }
 
 func updateSingle[T model[P], P any](db Database, updateSql string, instance T) (T, error) {
@@ -124,7 +191,8 @@ func updateSingle[T model[P], P any](db Database, updateSql string, instance T) 
 	return updated, nil
 }
 
-func UpdateMany[T model[P], P any](db Database, instances ...T) ([]T, error) {
+// Update a slice of records, one at a time. Return the updated records.
+func Update[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	updates := make([]T, 0)
 
 	// TODO: put this in a transaction and fail them all together
@@ -139,11 +207,13 @@ func UpdateMany[T model[P], P any](db Database, instances ...T) ([]T, error) {
 	return updates, nil
 }
 
+// Count the number of records that match the instance. Return count as a pointer.
 func CountPtr[T model[P], P any](db Database, instance T) (*int64, error) {
 	countSql := instance.CountQuery()
 	return count(db, countSql, instance)
 }
 
+// Count the number of records that match the instance.
 func Count[T model[P], P any](db Database, instance T) (int, error) {
 	result, err := CountPtr[T](db, instance)
 	if err != nil {
@@ -152,6 +222,7 @@ func Count[T model[P], P any](db Database, instance T) (int, error) {
 	return int(*result), nil
 }
 
+// Count records with a sql query. Bind struct fields to the query.
 func CountSql(db Database, countSql string, args interface{}) (int, error) {
 	result, err := count(db, countSql, args)
 	if err != nil {
@@ -161,10 +232,7 @@ func CountSql(db Database, countSql string, args interface{}) (int, error) {
 }
 
 func count(db Database, countSql string, instance interface{}) (*int64, error) {
-	type CountResult struct {
-		Count int64 `db:"count"`
-	}
-	countResult := new(CountResult)
+	result := new(int64)
 
 	rows, err := db.NamedQuery(countSql, instance)
 	if err != nil {
@@ -175,17 +243,15 @@ func count(db Database, countSql string, instance interface{}) (*int64, error) {
 
 	hasNext := rows.Next()
 	if !hasNext {
-		msg := fmt.Sprintf("count %s failed", GetTypeName(instance))
-
-		return nil, fmt.Errorf(msg)
+		return nil, fmt.Errorf("count %s failed", GetTypeName(instance))
 	}
 
-	err = rows.StructScan(countResult)
+	err = rows.Scan(result)
 	if err != nil {
 		return nil, err
 	}
 
-	return &countResult.Count, nil
+	return result, nil
 }
 
 type QueryOptions struct {
@@ -366,6 +432,9 @@ func DeleteOne[T model[P], P any](db Database, instance T) error {
 func DeleteAll[T model[P], P any](db Database, instance T) (*int64, error) {
 
 	result, err := db.NamedExec(instance.DeleteAllQuery(), instance)
+	if err != nil {
+		return nil, err
+	}
 
 	rowsAff, err := result.RowsAffected()
 	if err != nil {
@@ -603,16 +672,12 @@ var SET_NULL = struct {
 	JSON_OBJECT: "", // lib.JsonObject{},
 }
 
-var NULL_STRING string = "NULL"
-
-// var nullPtr *string = &NULL_STRING
-
 type UpdateObjectMetadata struct {
 	DbName        string
 	FieldValue    any
 	FieldType     string
 	ShouldSetNull bool
-	ShouldUpdate  bool
+	FieldHasValue bool
 }
 
 func rUpdateMeta(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
@@ -647,7 +712,7 @@ func rUpdateMeta(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
 				DbName:        fieldTag.Get("db"),
 				FieldType:     fieldType,
 				ShouldSetNull: shouldSetNull,
-				ShouldUpdate:  shouldUpdate,
+				FieldHasValue: shouldUpdate,
 			}
 		}
 	}
@@ -671,6 +736,19 @@ func getFieldMetaForUpdate[T model[P], P any](instance T) (fields map[string]Upd
 	instancePtr := *instance
 	fields = rUpdateMeta(reflect.ValueOf(instancePtr))
 
+	return fields
+}
+
+func getDbFieldMeta[T model[P], P any](instance T) (fields map[string]UpdateObjectMetadata) {
+
+	dbFields := getFieldMetaForUpdate[T](instance)
+	fields = make(map[string]UpdateObjectMetadata)
+
+	for _, v := range dbFields {
+		if v.FieldHasValue {
+			fields[v.DbName] = v
+		}
+	}
 	return fields
 }
 

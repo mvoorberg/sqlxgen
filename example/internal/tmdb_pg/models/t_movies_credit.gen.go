@@ -91,7 +91,7 @@ WHERE TRUE
 
 // language=postgresql
 var tMoviesCreditPkFieldsWhere = `
-WHERE casting = :casting
+ WHERE casting = :casting
   AND crew = :crew
   AND movie_id = :movie_id
   AND title = :title
@@ -99,11 +99,10 @@ WHERE casting = :casting
 
 // language=postgresql
 var tMoviesCreditReturningFields = `
-RETURNING
-  casting,
-  crew,
-  movie_id,
-  title;
+ RETURNING casting,
+ crew,
+ movie_id,
+ title;
 `
 
 // language=postgresql

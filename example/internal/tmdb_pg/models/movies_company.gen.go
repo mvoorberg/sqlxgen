@@ -82,15 +82,14 @@ WHERE TRUE
 
 // language=postgresql
 var moviesCompanyPkFieldsWhere = `
-WHERE movie_id = :movie_id
+ WHERE movie_id = :movie_id
   AND company_id = :company_id
 `
 
 // language=postgresql
 var moviesCompanyReturningFields = `
-RETURNING
-  movie_id,
-  company_id;
+ RETURNING movie_id,
+ company_id;
 `
 
 // language=postgresql

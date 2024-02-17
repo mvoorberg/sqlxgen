@@ -88,17 +88,16 @@ WHERE TRUE
 
 // language=postgresql
 var hyperParameterPkFieldsWhere = `
-WHERE type = :type
+ WHERE type = :type
   AND value = :value
 `
 
 // language=postgresql
 var hyperParameterReturningFields = `
-RETURNING
-  type,
-  value,
-  friendly_name,
-  friendly_name_search;
+ RETURNING type,
+ value,
+ friendly_name,
+ friendly_name_search;
 `
 
 // language=postgresql

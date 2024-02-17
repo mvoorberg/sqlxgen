@@ -137,32 +137,31 @@ WHERE TRUE
 
 // language=postgresql
 var tMoviePkFieldsWhere = `
-WHERE id = :id
+ WHERE id = :id
 `
 
 // language=postgresql
 var tMovieReturningFields = `
-RETURNING
-  id,
-  budget,
-  genre,
-  homepage,
-  keywords,
-  original_language,
-  original_title,
-  overview,
-  popularity,
-  production_companies,
-  production_countries,
-  release_date,
-  revenue,
-  runtime,
-  spoken_languages,
-  status,
-  tagline,
-  title,
-  vote_average,
-  vote_count;
+ RETURNING id,
+ budget,
+ genre,
+ homepage,
+ keywords,
+ original_language,
+ original_title,
+ overview,
+ popularity,
+ production_companies,
+ production_countries,
+ release_date,
+ revenue,
+ runtime,
+ spoken_languages,
+ status,
+ tagline,
+ title,
+ vote_average,
+ vote_count;
 `
 
 // language=postgresql

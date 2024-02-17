@@ -91,18 +91,17 @@ WHERE TRUE
 
 // language=postgresql
 var moviesActorPkFieldsWhere = `
-WHERE movie_id = :movie_id
+ WHERE movie_id = :movie_id
   AND actor_id = :actor_id
 `
 
 // language=postgresql
 var moviesActorReturningFields = `
-RETURNING
-  movie_id,
-  actor_id,
-  cast_order,
-  character,
-  character_search;
+ RETURNING movie_id,
+ actor_id,
+ cast_order,
+ character,
+ character_search;
 `
 
 // language=postgresql

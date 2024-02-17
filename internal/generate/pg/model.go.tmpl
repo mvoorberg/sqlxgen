@@ -106,15 +106,14 @@ WHERE TRUE
 // language=postgresql
 var {{ .CamelName }}PkFieldsWhere = `
 {{- range $i, $f := $pkFields }}
-{{ if (isFirst $i) }}WHERE{{ else }}  AND{{ end }} {{ .Column.ColumnName }} = :{{ .Column.ColumnName }}
+{{ if (isFirst $i) }} WHERE{{ else }}  AND{{ end }} {{ .Column.ColumnName }} = :{{ .Column.ColumnName }}
 {{- end }}
 `
 
 // language=postgresql
 var {{ .CamelName }}ReturningFields = `
-RETURNING
 {{- range $i, $f := $selectFields }}
-  {{ $f.Column.ColumnName }}{{ if not (isLast $i $selectFields) }},{{ end }}
+{{ if (isFirst $i) }} RETURNING{{ end }} {{ $f.Column.ColumnName }}{{ if not (isLast $i $selectFields) }},{{ end }}
 {{- end }};
 `
 
