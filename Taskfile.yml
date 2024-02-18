@@ -140,14 +140,14 @@ tasks:
     cmds:
       - go build -o ./.bin/sqlxgen ./cmd/sqlxgen
   build:
-    desc: "Build snapshot binary"
+    desc: "Build binary"
     cmds:
       - goreleaser build --clean
   release.local:
-    desc: "Build snapshot binary"
+    desc: "Build release binary"
     cmds:
       - goreleaser release --clean --skip=publish
   release:
-    desc: "Build snapshot binary"
+    desc: "Build and publish binary"
     cmds:
       - goreleaser release --clean
