@@ -9,9 +9,6 @@ import (
 	store "github.com/mvoorberg/example/internal/tmdb_pg/store"
 	"gotest.tools/assert"
 
-	// "models"
-	// "store"
-
 	_ "github.com/lib/pq"
 )
 
@@ -19,9 +16,8 @@ type StoreTest struct {
 	Db *sqlx.DB
 }
 
-// You can use testing.T, if you want to test the code without benchmarking
-func setupSuite(t testing.T) (func(t testing.T), StoreTest) {
-	log.Println("setup suite")
+func setupSuite(t testing.T, message string) (func(t testing.T), StoreTest) {
+	log.Printf("Setup %s\n", message)
 
 	st := StoreTest{}
 
@@ -44,7 +40,7 @@ func setupSuite(t testing.T) (func(t testing.T), StoreTest) {
 
 func TestMoviesCount(t *testing.T) {
 
-	teardownSuite, st := setupSuite(*t)
+	teardownSuite, st := setupSuite(*t, "Count testing with model as argument.")
 	defer teardownSuite(*t)
 
 	db := st.Db
@@ -68,15 +64,26 @@ func TestMoviesCount(t *testing.T) {
 	}
 	assert.Equal(t, *countMoviesPtr, int64(1))
 
+}
+
+func TestMoviesCountSql(t *testing.T) {
+
+	teardownSuite, st := setupSuite(*t, "Count using Sql and a custom struct argument.")
+	defer teardownSuite(*t)
+
+	db := st.Db
+
 	// CountSql
-	countSql := `SELECT COUNT(*) as hello FROM public.movies
+
+	// SQL query to count movies with a specific original_language
+	countSql := `SELECT COUNT(*) as whatever FROM public.movies
 					WHERE original_language = :original_language`
 
-	oLang := "zh"
+	// Use an anonymous struct with db tags to pass the parameters
 	zhLang := struct {
-		OriginalLanguage *string `db:"original_language"`
+		Lang string `db:"original_language"`
 	}{
-		OriginalLanguage: &oLang,
+		Lang: "zh",
 	}
 	countMoviesSql, err := store.CountSql(db, countSql, zhLang)
 	if err != nil {
@@ -84,11 +91,27 @@ func TestMoviesCount(t *testing.T) {
 	}
 	assert.Equal(t, countMoviesSql, 27)
 
+	// Same as above, but with a pointer to the struct field
+	countSql2 := `SELECT COUNT(*) FROM public.movies
+					WHERE original_language = :orig_lang`
+
+	language := "zh"
+	zhLangPtr := struct {
+		LangPtr *string `db:"orig_lang"`
+	}{
+		LangPtr: &language,
+	}
+	countMoviesSqlPtr, err := store.CountSql(db, countSql2, zhLangPtr)
+	if err != nil {
+		t.Errorf("unable : %v", err)
+	}
+	assert.Equal(t, countMoviesSqlPtr, 27)
+
 }
 
 func TestMoviesFind(t *testing.T) {
 
-	teardownSuite, st := setupSuite(*t)
+	teardownSuite, st := setupSuite(*t, "Find testing with different methods.")
 	defer teardownSuite(*t)
 
 	db := st.Db
@@ -143,7 +166,7 @@ func TestMoviesFind(t *testing.T) {
 
 func TestMoviesUpdate(t *testing.T) {
 
-	teardownSuite, st := setupSuite(*t)
+	teardownSuite, st := setupSuite(*t, "Update testing with different methods.")
 	defer teardownSuite(*t)
 
 	db := st.Db
@@ -162,24 +185,27 @@ func TestMoviesUpdate(t *testing.T) {
 	if err != nil {
 		t.Errorf("unable : %v", err)
 	}
+
 	assert.Equal(t, 24, int(*result.Id))
+	assert.Equal(t, "Released", *result.Status)
+	assert.Equal(t, "Kill Bill: Vol. 1", *result.OriginalTitle)
 
 	badAkCols := []string{"dummy", "original_language"}
-	_, err = store.UpdateByAk[*models.Movie](db, &kb, badAkCols)
+	_, err = store.UpdateOne[*models.Movie](db, &kb, badAkCols)
 	assert.ErrorContains(t, err, "alternate key dummy not found in Movie")
 
 	// Update will only update the fields that are set!
 	akCols := []string{"id", "original_language"}
-	akResult, err := store.UpdateByAk[*models.Movie](db, &kb, akCols)
+	akResult, err := store.UpdateOne[*models.Movie](db, &kb, akCols)
 	if err != nil {
 		t.Errorf("unable : %v", err)
 	}
 	assert.Equal(t, 24, int(*akResult.Id))
 
-	// Update by AK will only update one record!
+	// UpdateOne will only update one record!
 	akCols2 := []string{"original_language"}
-	_, err = store.UpdateByAk[*models.Movie](db, &kb, akCols2)
-	assert.ErrorContains(t, err, "update-by-AK Movie would have matched")
+	_, err = store.UpdateOne[*models.Movie](db, &kb, akCols2)
+	assert.ErrorContains(t, err, "update-one Movie would have matched 4504 rows")
 
 	// Update Many
 	someMovies := []*models.Movie{}

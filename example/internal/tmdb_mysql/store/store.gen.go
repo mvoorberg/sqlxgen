@@ -90,9 +90,8 @@ func UpdateByPk[T model[P], P any](db Database, instance T) (T, error) {
 	return updateSingle[T, P](db, *updateSql, instance)
 }
 
-// Update a single record by an Alternate Key.
-func UpdateByAk[T model[P], P any](db Database, instance T, altKeys []string) (T, error) {
-
+// Update a single record from a list of alternate or unique key columns.
+func UpdateOne[T model[P], P any](db Database, instance T, altKeys []string) (T, error) {
 	updateSql, err := getUpdateSql(instance, altKeys)
 	if err != nil {
 		return nil, err
@@ -111,7 +110,7 @@ func UpdateByAk[T model[P], P any](db Database, instance T, altKeys []string) (T
 		return nil, err
 	}
 	if result != 1 {
-		return nil, fmt.Errorf("update-by-AK %s would have matched %d rows", GetTypeName(instance), result)
+		return nil, fmt.Errorf("update-one %s would have matched %d rows", GetTypeName(instance), result)
 	}
 
 	return updateSingle[T, P](db, *updateSql, instance)
@@ -119,7 +118,7 @@ func UpdateByAk[T model[P], P any](db Database, instance T, altKeys []string) (T
 
 func getAltKeyWhere[T model[P], P any](model T, altKeys []string) (*string, error) {
 
-	fields := getFieldMetaForUpdate(model)
+	fields := getDbFieldMeta(model)
 
 	where := " WHERE "
 	for i, k := range altKeys {
@@ -736,6 +735,19 @@ func getFieldMetaForUpdate[T model[P], P any](instance T) (fields map[string]Upd
 	instancePtr := *instance
 	fields = rUpdateMeta(reflect.ValueOf(instancePtr))
 
+	return fields
+}
+
+func getDbFieldMeta[T model[P], P any](instance T) (fields map[string]UpdateObjectMetadata) {
+
+	dbFields := getFieldMetaForUpdate[T](instance)
+	fields = make(map[string]UpdateObjectMetadata)
+
+	for _, v := range dbFields {
+		if v.FieldHasValue {
+			fields[v.DbName] = v
+		}
+	}
 	return fields
 }
 

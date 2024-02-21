@@ -17,4 +17,4 @@ func main() {
 	utils.ExitWithError(err)
 }
 
-var Version = "https://github.com/mvoorberg/sqlxgen"
+var Version = "v1.0.2"

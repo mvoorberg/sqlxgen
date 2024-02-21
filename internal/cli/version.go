@@ -8,8 +8,9 @@ func versionCmd(version string) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "version",
 		Aliases: []string{"v"},
-		Short:   "Print the version number of sqlxgen",
+		Short:   "Print the sqlxgen version",
 		Run: func(_ *cobra.Command, _ []string) {
+			println("https://github.com/mvoorberg/sqlxgen")
 			println(version)
 		},
 	}
