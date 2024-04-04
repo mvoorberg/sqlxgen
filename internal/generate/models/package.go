@@ -19,6 +19,7 @@ type Package struct {
 	PackageDir       string
 	GenDir           string
 	Models           []model
+	Options          map[string]string
 }
 
 func (p Package) Generate() error {
@@ -29,7 +30,7 @@ func (p Package) Generate() error {
 	}
 
 	for _, m := range p.Models {
-		err := m.generate(p.ModelTemplate, p.PackageName, p.GenDir)
+		err := m.generate(p.ModelTemplate, p.PackageName, p.GenDir, p.Options)
 
 		if err != nil {
 			return err
@@ -47,6 +48,7 @@ func NewPackage(
 	packageDir string,
 	genDir string,
 	tables []introspect.Table,
+	options map[string]string,
 ) (Package, error) {
 	parentDir := filepath.Base(packageDir)
 
@@ -82,6 +84,7 @@ func NewPackage(
 		PackageName:      packageName,
 		Models:           models,
 		GenDir:           genDir,
+		Options:          options,
 	}
 
 	return p, nil

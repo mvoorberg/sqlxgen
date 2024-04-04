@@ -1,4 +1,4 @@
-# this is used for testing locally within this repo
+# this is used for example testing locally within this repo
 version: 1
 
 log:
@@ -8,6 +8,9 @@ log:
 configs:
   - name: tmdb_pg
     engine: postgres # postgres, mysql
+    options:
+      postgresModelBanner: "This is an example Postgres generated model."
+      postgresInt64JsonString: true
     database:
       url: "${TMDB_PG_URL}"
       host: "${TMDB_PG_HOST}"
@@ -39,6 +42,8 @@ configs:
         path: internal/tmdb_pg/models
   - name: tmdb_mysql
     engine: mysql
+    options:
+      mysqlModelBanner: "This is an example MySql generated model."
     database:
       url: "${TMDB_MYSQL_URL}"
       host: "${TMDB_MYSQL_HOST}"

@@ -8,6 +8,9 @@ log:
 configs:
   - name: tmdb_pg
     engine: postgres # postgres, mysql
+    options:
+      postgresModelBanner: "This is a Postgres generated model. DO NOT EDIT."
+      postgresInt64JsonString: "true"
     database:
       url: "${TMDB_PG_URL}"
       host: "${TMDB_PG_HOST}"
@@ -39,6 +42,8 @@ configs:
         path: gen/tmdb_pg/models
   - name: tmdb_mysql
     engine: mysql
+    options:
+      postgresInt64JsonString: doesNotApply
     database:
       url: "${TMDB_MYSQL_URL}"
       host: "${TMDB_MYSQL_HOST}"

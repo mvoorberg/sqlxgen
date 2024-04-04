@@ -34,6 +34,10 @@ var content = `+"`"+`{
 		"",
 	)
 
+	opts := map[string]string{
+		"mysqlModelBanner":    "This is my MySql banner",
+		"postgresModelBanner": "This is my Postgres banner",
+	}
 	got, err := NewPackage(
 		nil,
 		ft,
@@ -42,6 +46,7 @@ var content = `+"`"+`{
 		"gen/models",
 		"gen/models",
 		tables,
+		opts,
 	)
 
 	assert.Nil(t, err)
@@ -77,6 +82,11 @@ var content = `+"`"+`{
 		"",
 	)
 
+	opts := map[string]string{
+		"mysqlModelBanner":    "This is my MySql banner",
+		"postgresModelBanner": "This is my Postgres banner",
+	}
+
 	pkg, err := NewPackage(
 		mw.Creator,
 		ft,
@@ -85,6 +95,7 @@ var content = `+"`"+`{
 		"gen/models",
 		tmpDir,
 		tables,
+		opts,
 	)
 
 	if err != nil {

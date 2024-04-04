@@ -1,5 +1,11 @@
 package {{.PackageName}}
 
+// ************************************************************
+// {{GetOption "postgresModelBanner"}}
+// ************************************************************
+// Options:
+//   postgresInt64JsonString: {{GetOption "postgresInt64JsonString"}}
+
 import (
   "fmt"
   "strings"
@@ -18,7 +24,11 @@ import (
 {{- $receiverName := (slice $camelName 0 1) }}
 type {{ .PascalName }} struct {
   {{- range .Fields }}
+    {{- if eq .Type.GoType "*int64" }}
+    {{ .Name }} {{ .Type.GoType }} `db:"{{ .Column.ColumnName }}" json:"{{ .Column.ColumnName }}{{ if eq (GetOption "postgresInt64JsonString") "true" }},string{{ end }}"`
+    {{- else }}
     {{ .Name }} {{ .Type.GoType }} `db:"{{ .Column.ColumnName }}" json:"{{ .Column.ColumnName }}"`
+    {{- end }}
   {{- end }}
 }
 

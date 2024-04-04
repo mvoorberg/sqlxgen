@@ -22,6 +22,7 @@ type Generate struct {
 	Tables          []introspect.Table
 	Queries         []introspect.Query
 	Translate       types.Translate
+	Options         map[string]string
 }
 
 func (gen Generate) Generate() error {
@@ -90,6 +91,7 @@ func (gen Generate) generateModelPackage(
 		modelPackageDir,
 		modelGenDir,
 		gen.Tables,
+		gen.Options,
 	)
 
 	if err != nil {

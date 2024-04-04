@@ -177,7 +177,12 @@ var content = `+"`"+`{
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			err = m.generate(ft.ModelTemplate(), "test", "test")
+			opts := map[string]string{
+				"mysqlModelBanner":    "This is a MySql test banner",
+				"postgresModelBanner": "This is a Postgres test banner",
+			}
+
+			err = m.generate(ft.ModelTemplate(), "test", "test", opts)
 
 			assert.Nil(t, err)
 

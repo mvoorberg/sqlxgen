@@ -62,6 +62,7 @@ func (m model) generate(
 	modelTemplate string,
 	packageName string,
 	genDir string,
+	options map[string]string,
 ) error {
 	slog.Debug("generating model", "table", m.Table.TableName, "model", m.PascalName)
 
@@ -77,6 +78,13 @@ func (m model) generate(
 			b, _ := json.Marshal(v)
 
 			return string(b)
+		},
+		"GetOption": func(opt string) string {
+			optVal, ok := options[opt]
+			if !ok {
+				return ""
+			}
+			return optVal
 		},
 	}
 

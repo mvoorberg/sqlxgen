@@ -30,6 +30,10 @@ func defaultPgConfig() *Config {
 				Exclude: []string{},
 			},
 		},
+		Options: &types.Option{
+			PostgresModelBanner:     utils.PointerTo("This is a Postgres generated model. DO NOT EDIT."),
+			PostgresInt64JsonString: utils.PointerTo(false),
+		},
 		Gen: &types.Gen{
 			Store: &types.GenPartial{
 				Path: "gen/store",

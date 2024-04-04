@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -27,6 +28,7 @@ type Config struct {
 	Database *types.Database `json:"database" yaml:"database"`
 	Source   *types.Source   `json:"source" yaml:"source"`
 	Gen      *types.Gen      `json:"gen" yaml:"gen"`
+	Options  *types.Option   `json:"options" yaml:"options"`
 }
 
 func (c *Config) String() string {
@@ -37,6 +39,7 @@ func (c *Config) String() string {
 			fmt.Sprintf("Database: %v", c.Database),
 			fmt.Sprintf("Source: %v", c.Source),
 			fmt.Sprintf("Gen: %v", c.Gen),
+			fmt.Sprintf("Options: %v", c.Options),
 		},
 		", ",
 	)
@@ -194,6 +197,15 @@ func (c *Config) generate(
 		},
 	)
 
+	var opts map[string]string
+	tmpOpts, err := json.Marshal(c.Options)
+	if err != nil {
+		slog.Error("failed to marshal options", "error", err)
+		return err
+	}
+	json.Unmarshal(tmpOpts, &opts)
+	slog.Info("using options", "options", opts)
+
 	slog.Info("found queries", "count", len(queries), "queries", queryNames)
 
 	gen := generate.Generate{
@@ -204,6 +216,7 @@ func (c *Config) generate(
 		Tables:          tables,
 		Queries:         queries,
 		Translate:       translate,
+		Options:         opts,
 	}
 
 	err = gen.Generate()
@@ -237,6 +250,7 @@ func (c *Config) Merge(other *Config) *Config {
 	c.Database = c.Database.Merge(other.Database)
 	c.Source = c.Source.Merge(other.Source)
 	c.Gen = c.Gen.Merge(other.Gen)
+	c.Options = c.Options.Merge(other.Options)
 
 	return c
 }

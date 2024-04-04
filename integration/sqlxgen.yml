@@ -1,4 +1,4 @@
-# this is used for testing locally within this repo
+# this is used for integration testing locally within this repo
 version: 1
 
 log:
