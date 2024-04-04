@@ -1,5 +1,11 @@
 package models
 
+// ************************************************************
+// This is an example MySql generated model.
+// ************************************************************
+// Options:
+//   postgresInt64JsonString:
+
 import (
 	"fmt"
 	"strings"

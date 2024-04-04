@@ -1,5 +1,11 @@
 package models
 
+// ************************************************************
+// This is an example Postgres generated model.
+// ************************************************************
+// Options:
+//   postgresInt64JsonString: true
+
 import (
 	"fmt"
 	"github.com/lib/pq"
@@ -9,7 +15,7 @@ import (
 
 type Movie struct {
 	Id                   *int32          `db:"id" json:"id"`
-	Budget               *int64          `db:"budget" json:"budget"`
+	Budget               *int64          `db:"budget" json:"budget,string"`
 	ClientId             *string         `db:"client_id" json:"client_id"`
 	CompletedCoordinates interface{}     `db:"completed_coordinates" json:"completed_coordinates"`
 	DataSyncedAt         *time.Time      `db:"data_synced_at" json:"data_synced_at"`
@@ -24,7 +30,7 @@ type Movie struct {
 	Overview             *string         `db:"overview" json:"overview"`
 	Popularity           *float64        `db:"popularity" json:"popularity"`
 	ReleaseDate          *time.Time      `db:"release_date" json:"release_date"`
-	Revenue              *int64          `db:"revenue" json:"revenue"`
+	Revenue              *int64          `db:"revenue" json:"revenue,string"`
 	Runtime              *int32          `db:"runtime" json:"runtime"`
 	SearchVector         *string         `db:"search_vector" json:"search_vector"`
 	Status               *string         `db:"status" json:"status"`

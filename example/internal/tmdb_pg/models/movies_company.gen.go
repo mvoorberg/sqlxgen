@@ -1,13 +1,19 @@
 package models
 
+// ************************************************************
+// This is an example Postgres generated model.
+// ************************************************************
+// Options:
+//   postgresInt64JsonString: true
+
 import (
 	"fmt"
 	"strings"
 )
 
 type MoviesCompany struct {
-	MovieId   *int64 `db:"movie_id" json:"movie_id"`
-	CompanyId *int64 `db:"company_id" json:"company_id"`
+	MovieId   *int64 `db:"movie_id" json:"movie_id,string"`
+	CompanyId *int64 `db:"company_id" json:"company_id,string"`
 }
 
 func (m *MoviesCompany) String() string {

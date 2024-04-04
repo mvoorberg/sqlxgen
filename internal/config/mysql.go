@@ -32,7 +32,6 @@ func defaultMysqlConfig() *Config {
 		},
 		Options: &types.Option{
 			MysqlModelBanner: utils.PointerTo("This is a MySql generated model. DO NOT EDIT."),
-			// PostgresInt64JsonString: utils.PointerTo("false"), // not used in Mysql!
 		},
 		Gen: &types.Gen{
 			Store: &types.GenPartial{

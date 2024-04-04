@@ -1,5 +1,11 @@
 package models
 
+// ************************************************************
+// This is an example Postgres generated model.
+// ************************************************************
+// Options:
+//   postgresInt64JsonString: true
+
 import (
 	"encoding/json"
 	"fmt"
@@ -8,7 +14,7 @@ import (
 )
 
 type TMovie struct {
-	Id                  *int64          `db:"id" json:"id"`
+	Id                  *int64          `db:"id" json:"id,string"`
 	Budget              *float64        `db:"budget" json:"budget"`
 	Genre               json.RawMessage `db:"genre" json:"genre"`
 	Homepage            *string         `db:"homepage" json:"homepage"`
@@ -27,7 +33,7 @@ type TMovie struct {
 	Tagline             *string         `db:"tagline" json:"tagline"`
 	Title               *string         `db:"title" json:"title"`
 	VoteAverage         *float64        `db:"vote_average" json:"vote_average"`
-	VoteCount           *int64          `db:"vote_count" json:"vote_count"`
+	VoteCount           *int64          `db:"vote_count" json:"vote_count,string"`
 }
 
 func (t *TMovie) String() string {

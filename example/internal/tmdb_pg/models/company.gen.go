@@ -1,12 +1,18 @@
 package models
 
+// ************************************************************
+// This is an example Postgres generated model.
+// ************************************************************
+// Options:
+//   postgresInt64JsonString: true
+
 import (
 	"fmt"
 	"strings"
 )
 
 type Company struct {
-	Id         *int64  `db:"id" json:"id"`
+	Id         *int64  `db:"id" json:"id,string"`
 	Name       *string `db:"name" json:"name"`
 	NameSearch *string `db:"name_search" json:"name_search"`
 }

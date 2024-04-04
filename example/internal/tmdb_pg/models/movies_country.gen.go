@@ -1,12 +1,18 @@
 package models
 
+// ************************************************************
+// This is an example Postgres generated model.
+// ************************************************************
+// Options:
+//   postgresInt64JsonString: true
+
 import (
 	"fmt"
 	"strings"
 )
 
 type MoviesCountry struct {
-	MovieId   *int64  `db:"movie_id" json:"movie_id"`
+	MovieId   *int64  `db:"movie_id" json:"movie_id,string"`
 	CountryId *string `db:"country_id" json:"country_id"`
 }
 

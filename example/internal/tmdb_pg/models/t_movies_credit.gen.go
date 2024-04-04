@@ -1,5 +1,11 @@
 package models
 
+// ************************************************************
+// This is an example Postgres generated model.
+// ************************************************************
+// Options:
+//   postgresInt64JsonString: true
+
 import (
 	"encoding/json"
 	"fmt"
@@ -9,7 +15,7 @@ import (
 type TMoviesCredit struct {
 	Casting json.RawMessage `db:"casting" json:"casting"`
 	Crew    json.RawMessage `db:"crew" json:"crew"`
-	MovieId *int64          `db:"movie_id" json:"movie_id"`
+	MovieId *int64          `db:"movie_id" json:"movie_id,string"`
 	Title   *string         `db:"title" json:"title"`
 }
 
