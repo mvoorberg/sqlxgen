@@ -5,6 +5,8 @@ package models
 // ************************************************************
 // Options:
 //   postgresInt64JsonString: true
+//   createdDateFields: created_at
+//   updatedDateFields: updated_at
 
 import (
 	"fmt"

@@ -1,5 +1,12 @@
 package store
 
+// ************************************************************
+// This is a generated file.
+// ************************************************************
+// Options:
+//   createdDateFields: created_at
+//   updatedDateFields: updated_at
+
 import (
 	"context"
 	"database/sql"
@@ -145,8 +152,19 @@ func getUpdateSql[T model[P], P any](instance T, keyCols []string) (*string, err
 
 	updateSql := fmt.Sprintf("UPDATE %s SET ", tableName)
 	setCols := 0
+	delim := ""
 	for _, v := range meta {
-
+		if setCols > 0 {
+			delim = ","
+		}
+		if v.IsCreatedDate {
+			continue // Not used in update!
+		}
+		if v.IsUpdatedDate {
+			updateSql += fmt.Sprintf("\n  %s = NOW() %s", v.DbName, delim)
+			setCols++
+			continue
+		}
 		isKey := false // Don't update the Primary/Alternate Key cols!
 		for _, k := range keyCols {
 			if v.DbName == k {
@@ -155,10 +173,7 @@ func getUpdateSql[T model[P], P any](instance T, keyCols []string) (*string, err
 			}
 		}
 		if !isKey && v.FieldHasValue {
-			if setCols != 0 {
-				updateSql += ","
-			}
-			updateSql += fmt.Sprintf("\n  %s = :%s", v.DbName, v.DbName)
+			updateSql += fmt.Sprintf("\n  %s = :%s %s", v.DbName, v.DbName, delim)
 			setCols++
 		}
 	}
@@ -345,6 +360,12 @@ func FindOne[T model[P], P any](db Database, instance T) (T, error) {
 	if err != nil {
 		return nil, err
 	}
+	if (len(result)) > 1 {
+		return nil, fmt.Errorf("find-one %s matched %d rows", GetTypeName(instance), len(result))
+	}
+	if len(result) == 0 {
+		return nil, ErrNotFound
+	}
 	return result[0], nil
 }
 
@@ -356,6 +377,12 @@ func FindOneSql[T model[P], P any](db Database, querySQL string, args interface{
 	result, err := findMany[T](db, args, querySQL, true)
 	if err != nil {
 		return nil, err
+	}
+	if (len(result)) > 1 {
+		return nil, fmt.Errorf("find-one-sql %s matched %d rows", GetTypeName(args), len(result))
+	}
+	if len(result) == 0 {
+		return nil, ErrNotFound
 	}
 	return result[0], nil
 }
@@ -677,6 +704,21 @@ type UpdateObjectMetadata struct {
 	FieldType     string
 	ShouldSetNull bool
 	FieldHasValue bool
+	IsCreatedDate bool
+	IsUpdatedDate bool
+}
+
+var createdDateFields string = "created_at"
+var updatedDateFields string = "updated_at"
+
+func fieldInList(haystack string, needle string) bool {
+	optSlice := strings.Split(haystack, ",")
+	for _, opt := range optSlice {
+		if opt == needle {
+			return true
+		}
+	}
+	return false
 }
 
 func rUpdateMeta(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
@@ -712,6 +754,8 @@ func rUpdateMeta(rv reflect.Value) (fields map[string]UpdateObjectMetadata) {
 				FieldType:     fieldType,
 				ShouldSetNull: shouldSetNull,
 				FieldHasValue: shouldUpdate,
+				IsCreatedDate: fieldInList(createdDateFields, fieldName),
+				IsUpdatedDate: fieldInList(updatedDateFields, fieldName),
 			}
 		}
 	}

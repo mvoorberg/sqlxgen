@@ -5,6 +5,8 @@ package models
 // ************************************************************
 // Options:
 //   postgresInt64JsonString: true
+//   createdDateFields: created_at
+//   updatedDateFields: updated_at
 
 import (
 	"fmt"
@@ -18,8 +20,9 @@ type Movie struct {
 	Budget               *int64          `db:"budget" json:"budget,string"`
 	ClientId             *string         `db:"client_id" json:"client_id"`
 	CompletedCoordinates interface{}     `db:"completed_coordinates" json:"completed_coordinates"`
+	CreatedAt            *time.Time      `db:"created_at" json:"created_at"`
 	DataSyncedAt         *time.Time      `db:"data_synced_at" json:"data_synced_at"`
-	DistanceToPlace      *string         `db:"distance_to_place" json:"distance_to_place"`
+	DistanceToPlace      *float64        `db:"distance_to_place" json:"distance_to_place"`
 	Homepage             *string         `db:"homepage" json:"homepage"`
 	IsCompleted          *bool           `db:"is_completed" json:"is_completed"`
 	Keywords             *pq.StringArray `db:"keywords" json:"keywords"`
@@ -39,6 +42,7 @@ type Movie struct {
 	Tagline              *string         `db:"tagline" json:"tagline"`
 	Title                *string         `db:"title" json:"title"`
 	TitleSearch          *string         `db:"title_search" json:"title_search"`
+	UpdatedAt            *time.Time      `db:"updated_at" json:"updated_at"`
 	VoteAverage          *float64        `db:"vote_average" json:"vote_average"`
 	VoteCount            *int32          `db:"vote_count" json:"vote_count"`
 }
@@ -50,6 +54,7 @@ func (m *Movie) String() string {
 			fmt.Sprintf("Budget: %v", *m.Budget),
 			fmt.Sprintf("ClientId: %v", *m.ClientId),
 			// fmt.Sprintf("CompletedCoordinates: %v", *m.CompletedCoordinates),
+			fmt.Sprintf("CreatedAt: %v", *m.CreatedAt),
 			fmt.Sprintf("DataSyncedAt: %v", *m.DataSyncedAt),
 			fmt.Sprintf("DistanceToPlace: %v", *m.DistanceToPlace),
 			fmt.Sprintf("Homepage: %v", *m.Homepage),
@@ -71,6 +76,7 @@ func (m *Movie) String() string {
 			fmt.Sprintf("Tagline: %v", *m.Tagline),
 			fmt.Sprintf("Title: %v", *m.Title),
 			fmt.Sprintf("TitleSearch: %v", *m.TitleSearch),
+			fmt.Sprintf("UpdatedAt: %v", *m.UpdatedAt),
 			fmt.Sprintf("VoteAverage: %v", *m.VoteAverage),
 			fmt.Sprintf("VoteCount: %v", *m.VoteCount),
 		},
@@ -137,6 +143,7 @@ WHERE TRUE
     AND (CAST(:budget AS INT8) IS NULL or budget = :budget)
     AND (CAST(:client_id AS VARCHAR) IS NULL or client_id = :client_id)
     -- completed_coordinates / POINT is not supported here
+    AND (CAST(:created_at AS TIMESTAMP) IS NULL or created_at = :created_at)
     AND (CAST(:data_synced_at AS TIMESTAMP) IS NULL or data_synced_at = :data_synced_at)
     AND (CAST(:distance_to_place AS NUMERIC) IS NULL or distance_to_place = :distance_to_place)
     AND (CAST(:homepage AS TEXT) IS NULL or homepage = :homepage)
@@ -158,6 +165,7 @@ WHERE TRUE
     AND (CAST(:tagline AS TEXT) IS NULL or tagline = :tagline)
     AND (CAST(:title AS TEXT) IS NULL or title = :title)
     AND (CAST(:title_search AS TSVECTOR) IS NULL or title_search = :title_search)
+    AND (CAST(:updated_at AS TIMESTAMP) IS NULL or updated_at = :updated_at)
     AND (CAST(:vote_average AS FLOAT8) IS NULL or vote_average = :vote_average)
     AND (CAST(:vote_count AS INT4) IS NULL or vote_count = :vote_count)
 `
@@ -173,6 +181,7 @@ var movieReturningFields = `
  budget,
  client_id,
  completed_coordinates,
+ created_at,
  data_synced_at,
  distance_to_place,
  homepage,
@@ -194,6 +203,7 @@ var movieReturningFields = `
  tagline,
  title,
  title_search,
+ updated_at,
  vote_average,
  vote_count;
 `
@@ -204,6 +214,7 @@ INSERT INTO public.movies(
   budget,
   client_id,
   completed_coordinates,
+  created_at,
   data_synced_at,
   distance_to_place,
   homepage,
@@ -223,6 +234,7 @@ INSERT INTO public.movies(
   synopsis,
   tagline,
   title,
+  updated_at,
   vote_average,
   vote_count
 )
@@ -230,6 +242,7 @@ VALUES (
   :budget,
   :client_id,
   :completed_coordinates,
+  now(),
   :data_synced_at,
   :distance_to_place,
   :homepage,
@@ -249,6 +262,7 @@ VALUES (
   :synopsis,
   :tagline,
   :title,
+  now(),
   :vote_average,
   :vote_count
 )` + movieReturningFields + ";"
@@ -266,6 +280,7 @@ SELECT
   budget,
   client_id,
   completed_coordinates,
+  created_at,
   data_synced_at,
   distance_to_place,
   homepage,
@@ -287,6 +302,7 @@ SELECT
   tagline,
   title,
   title_search,
+  updated_at,
   vote_average,
   vote_count
 FROM public.movies
@@ -303,6 +319,7 @@ SELECT
   budget,
   client_id,
   completed_coordinates,
+  created_at,
   data_synced_at,
   distance_to_place,
   homepage,
@@ -324,6 +341,7 @@ SELECT
   tagline,
   title,
   title_search,
+  updated_at,
   vote_average,
   vote_count
 FROM public.movies
