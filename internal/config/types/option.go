@@ -9,6 +9,8 @@ type Option struct {
 	MysqlModelBanner        *string `json:"mysqlModelBanner" yaml:"mysqlModelBanner"`
 	PostgresModelBanner     *string `json:"postgresModelBanner" yaml:"postgresModelBanner"`
 	PostgresInt64JsonString *bool   `json:"postgresInt64JsonString,string" yaml:"postgresInt64JsonString"`
+	CreatedDateFields       *string `json:"createdDateFields" yaml:"createdDateFields"`
+	UpdatedDateFields       *string `json:"updatedDateFields" yaml:"updatedDateFields"`
 }
 
 func (q *Option) String() string {
@@ -21,6 +23,8 @@ func (q *Option) String() string {
 			fmt.Sprintf("mysqlModelBanner: %v", q.MysqlModelBanner),
 			fmt.Sprintf("postgresModelBanner: %v", q.PostgresModelBanner),
 			fmt.Sprintf("postgresInt64JsonString: %v", q.PostgresInt64JsonString),
+			fmt.Sprintf("createdDateFields: %v", q.CreatedDateFields),
+			fmt.Sprintf("updatedDateFields: %v", q.UpdatedDateFields),
 		},
 		", ",
 	)
@@ -44,9 +48,15 @@ func (q *Option) Merge(other *Option) *Option {
 	if other.MysqlModelBanner != nil {
 		q.MysqlModelBanner = other.MysqlModelBanner
 	}
-
 	if other.PostgresModelBanner != nil {
 		q.PostgresModelBanner = other.PostgresModelBanner
+	}
+
+	if other.CreatedDateFields != nil {
+		q.CreatedDateFields = other.CreatedDateFields
+	}
+	if other.UpdatedDateFields != nil {
+		q.UpdatedDateFields = other.UpdatedDateFields
 	}
 
 	return q

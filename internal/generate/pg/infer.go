@@ -80,7 +80,11 @@ func fromSingle(storePackageDir string, column introspect.Column) (types.GoType,
 		// returns numerics as strings.
 		//
 		// https://github.com/lib/pq/issues/648
-		goType.GoType = "*string"
+		// goType.GoType = "*string"
+
+		// float64 is closer the the intended use of numeric than string.
+		// That said, it could have some loss of precision going between DB & Go.
+		goType.GoType = "*float64"
 
 		return goType, nil
 

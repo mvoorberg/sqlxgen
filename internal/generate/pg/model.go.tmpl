@@ -5,6 +5,8 @@ package {{.PackageName}}
 // ************************************************************
 // Options:
 //   postgresInt64JsonString: {{GetOption "postgresInt64JsonString"}}
+//   createdDateFields: {{GetOption "createdDateFields"}}
+//   updatedDateFields: {{GetOption "updatedDateFields"}}
 
 import (
   "fmt"
@@ -138,9 +140,14 @@ INSERT INTO {{ .Table.SchemaName }}.{{ .Table.TableName }}(
 )
 VALUES (
 {{- range $i, $f := $insertFields }}
-  {{- if not .Column.Generated }}
+  {{- if eq "true" (OptionContains "createdDateFields" .Column.ColumnName) (OptionContains "updatedDateFields" .Column.ColumnName) }}
+  now(){{ if not (isLast $i $insertFields) }},{{ end }}
+  {{- else }}
+    {{- if not .Column.Generated }}
   :{{ .Column.ColumnName }}{{ if not (isLast $i $insertFields) }},{{ end }}
+    {{- end }}
   {{- end }}
+
 {{- end }}
 )` + {{ .CamelName }}ReturningFields + ";"
 

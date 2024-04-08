@@ -199,6 +199,8 @@ CREATE TABLE public.movies (
     budget bigint DEFAULT 0 NOT NULL,
     revenue bigint DEFAULT 0 NOT NULL,
     keywords text[] DEFAULT '{}'::text[] NOT NULL,
+    created_at timestamp NULL,
+    updated_at timestamp NULL,
     title_search tsvector GENERATED ALWAYS AS (to_tsvector('english'::regconfig, public.concat_ws_i(' '::text, VARIADIC ARRAY[title, original_title]))) STORED,
     keywords_search tsvector GENERATED ALWAYS AS (to_tsvector('english'::regconfig, public.array_to_string_i(keywords, ' '::text))) STORED
 );

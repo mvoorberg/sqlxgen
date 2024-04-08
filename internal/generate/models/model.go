@@ -86,6 +86,18 @@ func (m model) generate(
 			}
 			return optVal
 		},
+		"OptionContains": func(opt string, needle string) string {
+			optVal, ok := options[opt]
+			if ok {
+				optSlice := strings.Split(optVal, ",")
+				for _, opt := range optSlice {
+					if opt == needle {
+						return "true"
+					}
+				}
+			}
+			return "false"
+		},
 	}
 
 	tmpl, err := template.New("model").Funcs(helpers).Parse(modelTemplate)

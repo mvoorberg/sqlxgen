@@ -17,10 +17,16 @@ func TestPackage_Generate(t *testing.T) {
 
 	mw := writer.NewMemoryWriters()
 
+	opts := map[string]string{
+		"mysqlModelBanner":    "This is my MySql banner",
+		"postgresModelBanner": "This is my Postgres banner",
+	}
+
 	storePackage, err := NewPackage(
 		mw.Creator,
 		"github.com/mvoorberg/sqlxgen/gen/tmdb_pg/store",
 		genDir,
+		opts,
 	)
 
 	if err != nil {
@@ -47,10 +53,16 @@ func TestNewPackage(t *testing.T) {
 
 	mw := writer.NewMemoryWriters()
 
+	opts := map[string]string{
+		"mysqlModelBanner":    "This is my MySql banner",
+		"postgresModelBanner": "This is my Postgres banner",
+	}
+
 	got, err := NewPackage(
 		mw.Creator,
 		"github.com/mvoorberg/sqlxgen/gen/tmdb_pg/store",
 		genDir,
+		opts,
 	)
 
 	assert.Nil(t, err)
@@ -60,6 +72,7 @@ func TestNewPackage(t *testing.T) {
 		PackageName:   "store",
 		PackageDir:    "github.com/mvoorberg/sqlxgen/gen/tmdb_pg/store",
 		GenDir:        genDir,
+		Options:       opts,
 	}
 
 	assert.Equal(t, want.PackageName, got.PackageName)

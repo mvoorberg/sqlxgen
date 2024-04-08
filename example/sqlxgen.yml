@@ -11,6 +11,8 @@ configs:
     options:
       postgresModelBanner: "This is an example Postgres generated model."
       postgresInt64JsonString: true
+      createdDateFields: "created_at" # comma separated list of fields
+      updatedDateFields: "updated_at" # comma separated list of fields
     database:
       url: "${TMDB_PG_URL}"
       host: "${TMDB_PG_HOST}"

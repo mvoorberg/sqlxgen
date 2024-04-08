@@ -21,12 +21,23 @@ type Package struct {
 	PackageName   string         `json:"package_name"`
 	PackageDir    string         `json:"package_dir"`
 	GenDir        string         `json:"gen_dir"`
+	Options       map[string]string
 }
 
 func (p Package) Generate() error {
 	slog.Debug("generating store package")
 
-	tmpl, err := template.New(p.PackageName).Parse(storeTemplate)
+	helpers := template.FuncMap{
+		"GetOption": func(opt string) string {
+			optVal, ok := p.Options[opt]
+			if !ok {
+				return ""
+			}
+			return optVal
+		},
+	}
+
+	tmpl, err := template.New(p.PackageName).Funcs(helpers).Parse(storeTemplate)
 
 	if err != nil {
 		return errorx.IllegalFormat.Wrap(err, "unable to parse store template")
@@ -78,6 +89,7 @@ func NewPackage(
 	writerCreator writer.Creator,
 	packageDir string,
 	genDir string,
+	opts map[string]string,
 ) (Package, error) {
 	parentDir := filepath.Base(packageDir)
 
@@ -92,6 +104,7 @@ func NewPackage(
 		PackageName:   packageName,
 		PackageDir:    packageDir,
 		GenDir:        genDir,
+		Options:       opts,
 	}
 
 	return p, nil

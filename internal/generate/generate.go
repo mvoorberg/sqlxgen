@@ -58,7 +58,7 @@ func (gen Generate) generateStorePackage(projectPackageName string) (store.Packa
 
 	storeGenDir := path.Join(gen.ProjectDir, gen.StorePackageDir)
 
-	storePackage, err := store.NewPackage(gen.WriterCreator, storePackageDir, storeGenDir)
+	storePackage, err := store.NewPackage(gen.WriterCreator, storePackageDir, storeGenDir, gen.Options)
 
 	if err != nil {
 		return store.Package{}, errorx.InitializationFailed.Wrap(err, "unable to initialize store package")
