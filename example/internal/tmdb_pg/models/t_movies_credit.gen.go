@@ -91,8 +91,8 @@ func (t *TMoviesCredit) GetReturning() string {
 // language=postgresql
 var tMoviesCreditAllFieldsWhere = `
 WHERE TRUE
-    AND (CAST(:casting AS JSONB) IS NULL or casting = :casting)
-    AND (CAST(:crew AS JSONB) IS NULL or crew = :crew)
+    -- casting / JSONB is not supported here
+    -- crew / JSONB is not supported here
     AND (CAST(:movie_id AS INT8) IS NULL or movie_id = :movie_id)
     AND (CAST(:title AS TEXT) IS NULL or title = :title)
 `

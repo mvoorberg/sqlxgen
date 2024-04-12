@@ -107,7 +107,7 @@ func ({{ $receiverName }} *{{ .PascalName }}) GetReturning() string {
 var {{ .CamelName }}AllFieldsWhere = `
 WHERE TRUE
 {{- range $i, $f := $selectFields }}
-  {{- if eq .Column.Type "interface{}" "point"  "array" "geography" "hstore" }}
+  {{- if eq .Column.Type "interface{}" "point"  "array" "geography" "hstore" "jsonb" }}
     -- {{ .Column.ColumnName }} / {{ .Column.Type | ToUpper }} is not supported here
   {{- else }}
     AND (CAST(:{{ .Column.ColumnName }} AS {{ .Column.Type | ToUpper }}) IS NULL or {{ .Column.ColumnName }} = :{{ .Column.ColumnName }})
