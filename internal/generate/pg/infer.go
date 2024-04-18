@@ -94,9 +94,9 @@ func fromSingle(storePackageDir string, column introspect.Column) (types.GoType,
 		return goType, nil
 
 	case "json", "jsonb", "pg_catalog.json", "pg_catalog.jsonb":
-		goType.IsPointer = false
+		// goType.IsPointer = false
 
-		goType.GoType = "json.RawMessage"
+		goType.GoType = "*json.RawMessage"
 
 		goType.Import = "encoding/json"
 
