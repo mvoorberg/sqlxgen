@@ -17,4 +17,4 @@ func main() {
 	utils.ExitWithError(err)
 }
 
-var Version = "v1.0.7"
+var Version = "v1.0.8"
