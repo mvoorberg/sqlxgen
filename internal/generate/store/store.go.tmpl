@@ -161,7 +161,7 @@ func getUpdateSql[T model[P], P any](instance T, keyCols []string) (*string, err
 			continue // Not used in update!
 		}
 		if v.IsUpdatedDate {
-			updateSql += fmt.Sprintf("\n  %s %s = NOW()", delim, v.DbName, delim)
+			updateSql += fmt.Sprintf("\n  %s %s = NOW()", delim, v.DbName)
 			setCols++
 			continue
 		}
