@@ -87,9 +87,7 @@ func infer(storePackageDir string, column introspect.Column) (types.GoType, erro
 		return goType, nil
 
 	case "binary", "varbinary", "blob", "longblob", "mediumblob":
-		goType.GoType = "*pq.ByteaArray"
-
-		goType.Import = "github.com/lib/pq"
+		goType.GoType = "*[]byte"
 
 		return goType, nil
 	}
